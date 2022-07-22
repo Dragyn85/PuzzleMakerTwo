@@ -25,9 +25,6 @@ namespace PuzzleMakerTwo
 
         [SerializeField] private int _knobSize = 32;
 
-        [Header("Adjust puzzle overall size")] [SerializeField]
-        private float _pixelsPerUnit = 100;
-
         [Header("SavingPaths")] [SerializeField]
         string _savePath = "MyPuzzleMaker/Output";
 
@@ -36,6 +33,7 @@ namespace PuzzleMakerTwo
 
         [SerializeField] private PuzzlePiece _prefab;
         [SerializeField] private SpriteRenderer _puzzlePicture;
+        [SerializeField] private PuzzleGame _puzzleGamePrefab;
 
 
         private Grid<PuzzlePieceInit> _puzzleGrid;
@@ -219,7 +217,9 @@ namespace PuzzleMakerTwo
             PuzzleInfo puzzleInfo = new PuzzleInfo();
             puzzleInfo.path = Path.Combine(Application.dataPath, _savePath + "/info.txt");
             var ppu = _puzzleImageSprite.pixelsPerUnit;
-            GameObject parent = new GameObject(_puzzleName);
+            PuzzleGame parent = Instantiate(_puzzleGamePrefab,
+                Vector3.zero, Quaternion.identity);
+            parent.name = _puzzleName;
             
             foreach (var piece in allPuzzlePieces)
             {
