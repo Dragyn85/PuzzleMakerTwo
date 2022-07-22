@@ -150,13 +150,13 @@ namespace PuzzleMakerTwo
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             rightKnobTextureMale,
                             new Vector2(maskTexture2D.width - _knobSize,
-                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Width + _knobSize / 2));
+                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
                     //new Vector2(maskTexture.width - _knobSize , maskTexture.height / 2 - _knobSize / 2));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             rightKnobTextureFemale,
                             new Vector2(maskTexture2D.width - _knobSize * 2,
-                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Width + _knobSize / 2));
+                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
                 }
                 
                 if (puzzlePiece.HasNeighbourTop)
@@ -165,12 +165,12 @@ namespace PuzzleMakerTwo
                     if (!tempPieceInit.IsKnobMale(Vector2.down))
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             upperKnobTextureMale,
-                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Height + _knobSize / 2,
+                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
                                 maskTexture2D.height - _knobSize));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             upperKnobTextureFemale,
-                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Height + _knobSize / 2,
+                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
                                 maskTexture2D.height - _knobSize * 2));
                 }
 
@@ -182,14 +182,14 @@ namespace PuzzleMakerTwo
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             leftKnobTextureMale,
                             new Vector2(0,
-                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Width + _knobSize / 2));
+                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + _knobSize / 2));
                     }
                     else
                     {
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             leftKnobTextureFemale,
                             new Vector2(_knobSize,
-                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Width + _knobSize / 2));
+                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + _knobSize / 2));
                     }
                 }
 
@@ -199,12 +199,12 @@ namespace PuzzleMakerTwo
                     if (!tempPieceInit.IsKnobMale(Vector2.up))
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             downKnobTextureMale,
-                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Height + (_knobSize / 2),
+                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (_knobSize / 2),
                                 0));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             downKnobTextureFemale,
-                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Height + (_knobSize / 2),
+                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (_knobSize / 2),
                                 _knobSize));
                 }
 
@@ -248,10 +248,12 @@ namespace PuzzleMakerTwo
                 //if (piece.X == 0 && piece.Y == 0)
                 //puzzleOrigin = prefab.transform.position;
 
-                var worldCoordinatesOffset = prefab.transform.position - puzzleOrigin;
-                var newPuzzlePieceData = new puzzlePieceData(worldCoordinatesOffset.x, worldCoordinatesOffset.y, count);
+                
+                var correctPosition = prefab.transform.localPosition;
+                //var newPuzzlePieceData = new puzzlePieceData(correctPosition.x, correctPosition.y, count);
+                prefab.SetPosition(correctPosition);
                 //puzzleInfo.positions.Add(worldCoordinatesOffset);
-                puzzleInfo.PuzzlePieceDatas.Add(newPuzzlePieceData);
+                puzzleInfo.PuzzlePieceDatas.Add(prefab.GetData());
                 //prefab.SetPosition(worldCoordinatesOffset);
 
 
