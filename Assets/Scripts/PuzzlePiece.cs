@@ -7,7 +7,8 @@ public class PuzzlePiece : MonoBehaviour
     
     private SpriteMask _mask;
     private PuzzleGame _puzzleGame;
-    private puzzlePieceData _pieceData;
+    [SerializeField]private puzzlePieceData _pieceData;
+    
 
 
     public void SetMask(Sprite mask)
@@ -16,7 +17,12 @@ public class PuzzlePiece : MonoBehaviour
         _mask.sprite = mask;
     }
 
-
+    public void SetPosition(Vector2 correctPos)
+    {
+        _pieceData.x = correctPos.x;
+        _pieceData.y = correctPos.y;
+    }
+    
     public void Bind(puzzlePieceData pieceData)
     {
         _pieceData = pieceData;
@@ -34,5 +40,10 @@ public class PuzzlePiece : MonoBehaviour
                 Debug.Log("Hitting " + gameObject);
             }
         }
+    }
+
+    public puzzlePieceData GetData()
+    {
+        return _pieceData;
     }
 }

@@ -27,6 +27,8 @@ public class PuzzlePieceInit
     public bool HasNeighbourDown => _knobs.Down.PuzzlePieceInit != null;
     public float X => _x;
     public float Y => _y;
+    public int Height => _height;
+    public int Width => _width;
 
 
     public void SetKnobs()
