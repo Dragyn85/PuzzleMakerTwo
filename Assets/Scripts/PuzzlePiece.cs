@@ -1,8 +1,9 @@
 using PuzzleMakerTwo;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(SpriteMask))]
-public class PuzzlePiece : MonoBehaviour
+public class PuzzlePiece : MonoBehaviour, IPointerClickHandler,IPointerDownHandler
 {
     
     private SpriteMask _mask;
@@ -39,11 +40,21 @@ public class PuzzlePiece : MonoBehaviour
             {
                 Debug.Log("Hitting " + gameObject);
             }
-        }
+        }   
     }
 
     public puzzlePieceData GetData()
     {
         return _pieceData;
+    }
+    
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        Debug.Log("cLICKED");
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        Debug.Log("Down");
     }
 }

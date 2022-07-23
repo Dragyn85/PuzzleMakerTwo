@@ -44,7 +44,7 @@ namespace PuzzleMakerTwo
         
         
         //[ContextMenu("Creat Puzzle")]
-        [MenuItem("MyMenu/Puzzle Maker 2/Creat Puzzle")]
+        [MenuItem("MyMenu/Creat Puzzle")]
         public static void FindAndCreatPuzzle()
         {
             FindObjectOfType<PuzzleMakerTwo>().CreatPuzzle();
@@ -62,6 +62,7 @@ namespace PuzzleMakerTwo
         }
         public void CreatPuzzle()
         {
+            Texture2D puzzleTexture = CopyTexture2D(_puzzleImageSprite.texture);
             var width = _puzzleImageSprite.texture.width;
             var height = _puzzleImageSprite.texture.height;
             int[] puzzlePieceWidths = new int[_columns];
@@ -256,12 +257,37 @@ namespace PuzzleMakerTwo
                 puzzleInfo.PuzzlePieceDatas.Add(prefab.GetData());
                 //prefab.SetPosition(worldCoordinatesOffset);
 
-
-
+                var newTexture = new Texture2D(mask.width, mask.height);
+                var startPixelX = sumToIndexArray(puzzlePieceWidths, (int)piece.X-1)-_knobSize;
+                var startPixelY = sumToIndexArray(puzzlePieceHeights, (int)piece.Y-1)-_knobSize;
+                
+                for (int x = 0; x < mask.width; x++)
+                {
+                    for (int y = 0; y < mask.height; y++)
+                    {
+                        if (mask.GetPixel(x, y) == Color.white)
+                        {
+                            if(y==300)
+                                Debug.Log("Bigger then 400");
+                            newTexture.SetPixel(x,y,puzzleTexture.GetPixel(x + startPixelX, y + startPixelY));
+                        }
+                        else
+                        {
+                            newTexture.SetPixel(x,y,Color.clear);
+                        }
+                    }
+                    
+                }
                 var path = _savePath + "/" + _puzzleName + "mask" + count + ".png";
+                var texturepath = _savePath + "/" + _puzzleName + count + ".png";
+                
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
+                    ppu);
+                var savedSpriteaswell = SaveSpriteAsAsset(textureSprite, texturepath);
                 var savedSprite = SaveSpriteAsAsset(spriteMask, path);
-                prefab.SetMask(savedSprite);
+                prefab.SetMask(savedSpriteaswell);
+                
 
 
 
@@ -283,6 +309,15 @@ namespace PuzzleMakerTwo
             AssetDatabase.Refresh();
             
             printPuzzleInfo(puzzleInfo);
+            parent.FindPieces();
+            parent.SetInfo(puzzleInfo);
+        }
+
+        private Texture2D CopyTexture2D(Texture2D texture)
+        {
+            Texture2D copy = new Texture2D(texture.width, texture.height);
+            copy.SetPixels(texture.GetPixels());
+            return copy;
         }
 
         private void DividePixels(int amount, int[] TargetArray)
