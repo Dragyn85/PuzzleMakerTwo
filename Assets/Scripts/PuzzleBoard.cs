@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Grid<TGridObject> {
+public class PuzzleBoard<TGridObject> {
 
     public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
     public class OnGridObjectChangedEventArgs : EventArgs {
@@ -29,13 +29,13 @@ public class Grid<TGridObject> {
     private float cellSize;
     private Vector3 originPosition;
     private TGridObject[,] gridArray;
-    private Func<Grid<TGridObject>, int, int,int,int,TGridObject> createGridObject;
+    private Func<PuzzleBoard<TGridObject>, int, int,int,int,TGridObject> createGridObject;
 
-    public Grid(int width, 
+    public PuzzleBoard(int width, 
             int height, 
             float cellSize, 
             Vector3 originPosition, 
-            Func<Grid<TGridObject>, int, int,int,int, TGridObject> createGridObject,
+            Func<PuzzleBoard<TGridObject>, int, int,int,int, TGridObject> createGridObject,
             int[] widths,
             int[] heights) 
     {

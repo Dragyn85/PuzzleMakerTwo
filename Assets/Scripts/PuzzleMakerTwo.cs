@@ -5,6 +5,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Unity.Mathematics;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace PuzzleMakerTwo
@@ -12,12 +13,15 @@ namespace PuzzleMakerTwo
 
     public class PuzzleMakerTwo : MonoBehaviour
     {
+        private const string PrefabOutputPrefix = "PiecePrefab";
+
         [Header("1. Select sprite for puzzle")] [SerializeField]
         private Sprite _puzzleImageSprite;
-        
+
         [Header("Decide, puzzle size with amount of rows/columns and pixels for the pieces")]
 
         [SerializeField] private int _columns = 3;
+
         [SerializeField] private int _rows = 3;
 
         [Header("Decide knob design, only symmetrical are supported.")] [SerializeField]
@@ -32,17 +36,12 @@ namespace PuzzleMakerTwo
 
 
         [SerializeField] private PuzzlePiece _prefab;
-        [SerializeField] private SpriteRenderer _puzzlePicture;
         [SerializeField] private PuzzleGame _puzzleGamePrefab;
 
 
-        private Grid<PuzzlePieceInit> _puzzleGrid;
-        private const string PrefabOutputPrefix = "PiecePrefab";
+        private PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
 
 
-
-        
-        
         //[ContextMenu("Creat Puzzle")]
         [MenuItem("MyMenu/Creat Puzzle")]
         public static void FindAndCreatPuzzle()
@@ -50,7 +49,7 @@ namespace PuzzleMakerTwo
             FindObjectOfType<PuzzleMakerTwo>().CreatPuzzle();
         }
 
-        int sumToIndexArray(int[] array,int index)
+        int sumOfIntsToIndexArray(int[] array,int index)
         {
             var sum = 0;
             for (int i = 0; i <= index; i++)
@@ -60,6 +59,7 @@ namespace PuzzleMakerTwo
 
             return sum;
         }
+
         public void CreatPuzzle()
         {
             Texture2D puzzleTexture = CopyTexture2D(_puzzleImageSprite.texture);
@@ -71,37 +71,28 @@ namespace PuzzleMakerTwo
             DividePixels(width, puzzlePieceWidths);
             DividePixels(height,puzzlePieceHeights);
 
-            foreach (var pieceWidth in puzzlePieceWidths)
-            {
-                Debug.Log(pieceWidth);
-            }
-
-            var total = sumToIndexArray(puzzlePieceWidths, puzzlePieceWidths.Length - 1);
-            Debug.Log("TOTAL pixels = " + total);
+            var total = sumOfIntsToIndexArray(puzzlePieceWidths, puzzlePieceWidths.Length - 1);
             
-            
-            //CODE BELLOW IS NOT REMADE 20/7 -22
-
-
-            PuzzlePieceInit CreateGridObject(Grid<PuzzlePieceInit> g, int x, int y,int width, int height)
+            //Method for creating puzzlePieces passed to the PuzzleBoard
+            PuzzlePieceInit CreatePuzzlePiece(PuzzleBoard<PuzzlePieceInit> g, int x, int y,int width, int height)
             {
                 return new PuzzlePieceInit(g, x, y,height,width);
             }
 
+            //Creat PuzzleBoard
+            _puzzleBoard = new PuzzleBoard<PuzzlePieceInit>(_columns, _rows, 1,
+                Vector3.zero, CreatePuzzlePiece,puzzlePieceWidths,puzzlePieceHeights);
 
-            _puzzleGrid = new Grid<PuzzlePieceInit>(_columns, _rows, 1,
-                Vector3.zero, CreateGridObject,puzzlePieceWidths,puzzlePieceHeights);
+            
+            var allPuzzlePieces = _puzzleBoard.GetAll();
 
-            var allPuzzlePieces = _puzzleGrid.GetAll();
-
-
+            
             for (int i = 0; i < allPuzzlePieces.Count; i++)
             {
                 allPuzzlePieces[i].SetKnobs();
             }
 
-            //var totalPieceSizeWidth = _ + _knobSize + _knobSize;
-            //var totalPieceSizeHeight = _puzzlePieceSize + _knobSize + _knobSize;
+            //Creats Male and Female Knobs in all direction in the correct size.
             Texture2D rightKnobTextureMale = MakeKnobTexture();
             rightKnobTextureMale.Apply();
 
@@ -206,6 +197,7 @@ namespace PuzzleMakerTwo
                             new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (_knobSize / 2),
                                 _knobSize));
                 }
+                
 
                 finalMask.Apply();
                 puzzlePiece.SetTexture(finalMask);
@@ -214,9 +206,6 @@ namespace PuzzleMakerTwo
             int count = 0;
 
 
-            Vector3 puzzleOrigin = Vector3.zero;
-            PuzzleInfo puzzleInfo = new PuzzleInfo();
-            puzzleInfo.path = Path.Combine(Application.dataPath, _savePath + "/info.txt");
             var ppu = _puzzleImageSprite.pixelsPerUnit;
             PuzzleGame parent = Instantiate(_puzzleGamePrefab,
                 Vector3.zero, Quaternion.identity);
@@ -229,88 +218,58 @@ namespace PuzzleMakerTwo
                 var spriteMask = Sprite.Create(mask, new Rect(0, 0, mask.width, mask.height), new Vector2(0.5f, 0.5f),
                     ppu);
                 spriteMask.name = $"X{piece.X} Y{piece.Y}";
-
-/*
-                var prefab = Instantiate(_prefab,
-                    Vector3.zero, 
-                    quaternion.identity,
-                    parent.transform);
-                */
                 
-                 var prefab = Instantiate(_prefab,
+                var prefab = Instantiate(_prefab,
                     new Vector3(
-                        (sumToIndexArray(puzzlePieceWidths,((int)piece.X-1)) / ppu)+(piece.Width/ppu)/2,
-                        (sumToIndexArray(puzzlePieceHeights,((int)piece.Y-1)) / ppu)+(piece.Height/ppu)/2,
+                        (sumOfIntsToIndexArray(puzzlePieceWidths,((int)piece.X-1)) / ppu)+(piece.Width/ppu)/2,
+                        (sumOfIntsToIndexArray(puzzlePieceHeights,((int)piece.Y-1)) / ppu)+(piece.Height/ppu)/2,
                         0),
                     quaternion.identity,
                     parent.transform);
                 
+                var correctPosition = prefab.transform.localPosition; 
                 
-                //if (piece.X == 0 && piece.Y == 0)
-                //puzzleOrigin = prefab.transform.position;
-
-                
-                var correctPosition = prefab.transform.localPosition;
-                //var newPuzzlePieceData = new puzzlePieceData(correctPosition.x, correctPosition.y, count);
                 prefab.SetPosition(correctPosition);
-                //puzzleInfo.positions.Add(worldCoordinatesOffset);
-                puzzleInfo.PuzzlePieceDatas.Add(prefab.GetData());
-                //prefab.SetPosition(worldCoordinatesOffset);
 
                 var newTexture = new Texture2D(mask.width, mask.height);
-                var startPixelX = sumToIndexArray(puzzlePieceWidths, (int)piece.X-1)-_knobSize;
-                var startPixelY = sumToIndexArray(puzzlePieceHeights, (int)piece.Y-1)-_knobSize;
+                var startPixelX = sumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X-1)-_knobSize;
+                var startPixelY = sumOfIntsToIndexArray(puzzlePieceHeights, (int)piece.Y-1)-_knobSize;
                 
                 for (int x = 0; x < mask.width; x++)
-                {
                     for (int y = 0; y < mask.height; y++)
-                    {
                         if (mask.GetPixel(x, y) == Color.white)
-                        {
-                            if(y==300)
-                                Debug.Log("Bigger then 400");
                             newTexture.SetPixel(x,y,puzzleTexture.GetPixel(x + startPixelX, y + startPixelY));
-                        }
                         else
-                        {
                             newTexture.SetPixel(x,y,Color.clear);
-                        }
-                    }
-                    
-                }
-                var path = _savePath + "/" + _puzzleName + "mask" + count + ".png";
+                        
                 var texturepath = _savePath + "/" + _puzzleName + count + ".png";
                 
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                if(Directory.Exists(Path.GetDirectoryName(texturepath)))
+                    Debug.Log("Ask to overwrite");
+                Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
                 var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
                     ppu);
                 var savedSpriteaswell = SaveSpriteAsAsset(textureSprite, texturepath);
-                var savedSprite = SaveSpriteAsAsset(spriteMask, path);
-                prefab.SetMask(savedSpriteaswell);
-                
-
-
-
-                var pictureInstance = Instantiate(_puzzlePicture,new Vector3(width/2/ppu,height/2/ppu),Quaternion.identity,prefab.transform);
-
-                pictureInstance.sprite = _puzzleImageSprite;
-                pictureInstance.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
-
-                var prefabPath = Path.Combine(Application.dataPath,
-                    _savePath + "/" + _puzzleName + PrefabOutputPrefix + count + ".prefab");
-                PrefabUtility.SaveAsPrefabAsset(prefab.gameObject, prefabPath);
-
-                //DestroyImmediate(prefab.gameObject);
+                prefab.SetSprite(savedSpriteaswell);
+                prefab.SetBoardPosition(piece.X, piece.Y);
+                prefab.SetCornerStart(sumOfIntsToIndexArray(puzzlePieceWidths, piece.X - 1),
+                    sumOfIntsToIndexArray(puzzlePieceHeights, piece.Y - 1));
+                var puzzleMoveGrabCollider = prefab.gameObject.AddComponent<BoxCollider2D>();
+                puzzleMoveGrabCollider.isTrigger = false;
+                puzzleMoveGrabCollider.size =
+                    new Vector2((newTexture.width - 2 * _knobSize)/ppu, (newTexture.height - 2 * _knobSize)/ppu);
 
                 AssetDatabase.SaveAssets();
 
             }
-
+            var parentPrefabPath = Path.Combine(Application.dataPath,
+                _savePath + "/" + _puzzleName + ".prefab");
+            parent.FindPieces();
+            var parentPrefab = PrefabUtility.SaveAsPrefabAsset(parent.gameObject,parentPrefabPath);
+            AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             
-            printPuzzleInfo(puzzleInfo);
-            parent.FindPieces();
-            parent.SetInfo(puzzleInfo);
+            DestroyImmediate(parent.gameObject);
         }
 
         private Texture2D CopyTexture2D(Texture2D texture)
@@ -329,7 +288,7 @@ namespace PuzzleMakerTwo
             for (int i = 1; i < TargetArray.Length - 1; i++)
             {
                 var currentBaseXpos = ((float)amount / _columns) * (i + 1);
-                int temp = sumToIndexArray(TargetArray, i - 1) + first;
+                int temp = sumOfIntsToIndexArray(TargetArray, i - 1) + first;
 
                 if (currentBaseXpos - temp >= 1)
                     TargetArray[i] = first + 1;
@@ -337,7 +296,7 @@ namespace PuzzleMakerTwo
                     TargetArray[i] = first;
             }
 
-            var currentSum = sumToIndexArray(TargetArray, TargetArray.Length - 1);
+            var currentSum = sumOfIntsToIndexArray(TargetArray, TargetArray.Length - 1);
             TargetArray[TargetArray.Length - 1] = amount - currentSum;
         }
 
@@ -366,7 +325,6 @@ namespace PuzzleMakerTwo
         }
 
 
-
         private Texture2D MakeKnobTexture()
         {
             var newTexture = new Texture2D(_knob.width, _knob.height);
@@ -383,15 +341,6 @@ namespace PuzzleMakerTwo
 
 
             return newTexture;
-        }
-
-        void printPuzzleInfo(PuzzleInfo puzzleInfo)
-        {
-
-            var json = JsonUtility.ToJson(puzzleInfo);
-            System.IO.File.WriteAllText(puzzleInfo.path, json);
-            System.IO.File.WriteAllText(puzzleInfo.path, JsonConvert.SerializeObject(puzzleInfo));
-
         }
     }
 
@@ -415,9 +364,9 @@ namespace PuzzleMakerTwo
     [Serializable]
     public class puzzlePieceData
     {
-        public int PieceNumber { get; private set; }
         public float x;
         public float y;
+        public Vector2 puzzlePixelStartCorner;
 
 
         public puzzlePieceData(float x, float y, int pieceNumber)
@@ -427,6 +376,7 @@ namespace PuzzleMakerTwo
             this.y = y;
         }
 
+        public int PieceNumber { get; private set; }
     }
 
     public struct Knobs

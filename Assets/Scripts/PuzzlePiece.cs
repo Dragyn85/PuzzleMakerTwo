@@ -2,20 +2,22 @@ using PuzzleMakerTwo;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(SpriteMask))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class PuzzlePiece : MonoBehaviour, IPointerClickHandler,IPointerDownHandler
 {
     
-    private SpriteMask _mask;
+    private SpriteRenderer _spriteRenderer;
     private PuzzleGame _puzzleGame;
     [SerializeField]private puzzlePieceData _pieceData;
-    
 
 
-    public void SetMask(Sprite mask)
+    public Vector2 correctPos => _pieceData.puzzlePixelStartCorner / _spriteRenderer.sprite.pixelsPerUnit;
+
+    public void SetSprite(Sprite newSprite)
     {
-        _mask = GetComponent<SpriteMask>();
-        _mask.sprite = mask;
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer.sprite = newSprite;
+        
     }
 
     public void SetPosition(Vector2 correctPos)
@@ -50,11 +52,30 @@ public class PuzzlePiece : MonoBehaviour, IPointerClickHandler,IPointerDownHandl
     
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log("cLICKED");
+
+        if (eventData.pointerClick.gameObject == gameObject)
+        {
+            Debug.Log("Clicked this :" +gameObject.name);
+            return;
+        }
+
+        Debug.Log("Clicked something");
+
+
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("Down");
+    }
+
+    public void SetBoardPosition(int pieceX, int pieceY)
+    {
+        _pieceData.x = pieceX;
+        _pieceData.y = pieceY;
+    }
+
+    public void SetCornerStart(int startPixelX, int startPixelY)
+    {
+        _pieceData.puzzlePixelStartCorner = new Vector2(startPixelX, startPixelY);
     }
 }

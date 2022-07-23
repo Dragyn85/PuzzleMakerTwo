@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PuzzlePieceInit
 {
-    Grid<PuzzlePieceInit> _grid;
+    PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
     int _x;
     int _y;
     private Knobs _knobs;
@@ -12,9 +12,9 @@ public class PuzzlePieceInit
     private int _width;
     
 
-    public PuzzlePieceInit(Grid<PuzzlePieceInit> grid,int x, int y,int height,int width)
+    public PuzzlePieceInit(PuzzleBoard<PuzzlePieceInit> puzzleBoard,int x, int y,int height,int width)
     {
-        _grid = grid;
+        _puzzleBoard = puzzleBoard;
         _x = x;
         _y = y;
         _height = height;
@@ -25,8 +25,8 @@ public class PuzzlePieceInit
     public bool HasNeighbourLeft => _knobs.Left.PuzzlePieceInit != null;
     public bool HasNeighbourRight => _knobs.Right.PuzzlePieceInit != null;
     public bool HasNeighbourDown => _knobs.Down.PuzzlePieceInit != null;
-    public float X => _x;
-    public float Y => _y;
+    public int X => _x;
+    public int Y => _y;
     public int Height => _height;
     public int Width => _width;
 
@@ -39,10 +39,10 @@ public class PuzzlePieceInit
 
     private void SetPieceNeighbour()
     {
-        _knobs.Left.PuzzlePieceInit = _grid.GetGridObject(_x - 1, _y);
-        _knobs.Down.PuzzlePieceInit = _grid.GetGridObject(_x, _y - 1);
-        _knobs.Top.PuzzlePieceInit = _grid.GetGridObject(_x, _y + 1);
-        _knobs.Right.PuzzlePieceInit = _grid.GetGridObject(_x + 1, _y);
+        _knobs.Left.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x - 1, _y);
+        _knobs.Down.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x, _y - 1);
+        _knobs.Top.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x, _y + 1);
+        _knobs.Right.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x + 1, _y);
     }
 
     private void SetKnobsPositionAndGender()
@@ -131,7 +131,7 @@ public class PuzzlePieceInit
     public PuzzlePieceInit GetNeighbour(Vector2 direction)
     {
         Vector2 side = new Vector2(_x, _y) + direction;
-        return _grid.GetGridObject((int)side.x, (int)side.y);
+        return _puzzleBoard.GetGridObject((int)side.x, (int)side.y);
         
     }
 

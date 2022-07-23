@@ -215,7 +215,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56666c5a40171f54783dd416a44f42bf, type: 3}
   m_Name: 
@@ -259,10 +259,10 @@ MonoBehaviour:
   _knob: {fileID: 2800000, guid: 42d8cc68c4222a94292bae0598377568, type: 3}
   _knobSize: 64
   _savePath: MyPuzzleMaker/Output
-  _puzzleName: 200ppu
+  _puzzleName: finnished
   _prefab: {fileID: 4226682706534013044, guid: db5c759e484b3b348b6327f6af5008e1, type: 3}
-  _puzzlePicture: {fileID: -4100659733357667870, guid: 98788dbad101d534d9ba3003f6d2df30, type: 3}
   _puzzleGamePrefab: {fileID: 3504547588845433917, guid: 519b07f400150dd4c8208fcadd06c73f, type: 3}
+  _keepInHierachy: 1
 --- !u!4 &736222023
 Transform:
   m_ObjectHideFlags: 0
