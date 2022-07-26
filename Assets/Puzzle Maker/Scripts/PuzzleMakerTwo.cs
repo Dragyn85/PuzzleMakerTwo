@@ -230,6 +230,7 @@ namespace PuzzleMakerTwo
                 var correctPosition = prefab.transform.localPosition; 
                 
                 prefab.SetPosition(correctPosition);
+                prefab.name = $"PuzzlePiece {count}";
 
                 var newTexture = new Texture2D(mask.width, mask.height);
                 var startPixelX = sumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X-1)-_knobSize;
@@ -254,6 +255,7 @@ namespace PuzzleMakerTwo
                 prefab.SetBoardPosition(piece.X, piece.Y);
                 prefab.SetCornerStart(sumOfIntsToIndexArray(puzzlePieceWidths, piece.X - 1),
                     sumOfIntsToIndexArray(puzzlePieceHeights, piece.Y - 1));
+                
                 var puzzleMoveGrabCollider = prefab.gameObject.AddComponent<BoxCollider2D>();
                 puzzleMoveGrabCollider.isTrigger = false;
                 puzzleMoveGrabCollider.size =
@@ -361,23 +363,7 @@ namespace PuzzleMakerTwo
         }
     }
 
-    [Serializable]
-    public class puzzlePieceData
-    {
-        public float x;
-        public float y;
-        public Vector2 puzzlePixelStartCorner;
-
-
-        public puzzlePieceData(float x, float y, int pieceNumber)
-        {
-            PieceNumber = pieceNumber;
-            this.x = x;
-            this.y = y;
-        }
-
-        public int PieceNumber { get; private set; }
-    }
+    
 
     public struct Knobs
     {

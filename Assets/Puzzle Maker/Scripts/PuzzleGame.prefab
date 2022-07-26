@@ -8,7 +8,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8503260918138542593}
+  - component: {fileID: 4626867838130911108}
   - component: {fileID: 3504547588845433917}
   m_Layer: 0
   m_Name: PuzzleGame
@@ -17,7 +17,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8503260918138542593
+--- !u!4 &4626867838130911108
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,3 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _puzzleMakerJsonOutput: {fileID: 0}
   _puzzlePieces: []
+  _puzzleInfo:
+    PuzzlePieceDatas: []
+    path: 
+    PieceCountPrefix: 
