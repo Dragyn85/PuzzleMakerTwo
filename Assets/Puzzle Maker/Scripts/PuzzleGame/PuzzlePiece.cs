@@ -45,11 +45,6 @@ public class PuzzlePiece : MonoBehaviour
         return _pieceData;
     }
 
-    public void MoveToPosition(Vector2 pos)
-    {
-        _rectTransform.position = pos;
-    }
-
     private void OnMouseDown()
     {
         PuzzleGame.Instance.HeldOffset = GetMouseWorldPos() - transform.position;
