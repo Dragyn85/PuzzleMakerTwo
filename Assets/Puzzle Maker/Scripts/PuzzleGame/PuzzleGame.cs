@@ -43,6 +43,10 @@ public class PuzzleGame : MonoBehaviour
     private void Start()
     {
         FindPieces();
+        foreach (var puzzlePiece in _puzzlePieces)
+        {
+            puzzlePiece.Initialize();
+        }
         _availablePiecesArea.AddPieces(_puzzlePieces);
     }
 

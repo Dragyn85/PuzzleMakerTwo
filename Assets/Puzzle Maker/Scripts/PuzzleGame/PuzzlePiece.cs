@@ -86,13 +86,10 @@ public class PuzzlePiece : MonoBehaviour
 
     
 
-    public void Initialize(Vector2 upleft,Vector2 downright)
+    public void Initialize()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         CalculateCorrectPosition();
-        var randX = Random.Range(upleft.x, downright.x);
-        var randY = Random.Range(downright.y, upleft.y);
-        transform.position = new Vector3(randX,randY,0);
     }
 }
 

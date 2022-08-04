@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.GameCenter;
 
 public class AvailablePiecesArea : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class AvailablePiecesArea : MonoBehaviour
     private Vector3 lastPos;
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
+    [SerializeField] private Transform _center;
 
     private void OnMouseDrag()
     {
@@ -24,10 +26,8 @@ public class AvailablePiecesArea : MonoBehaviour
             var deltaY = lastPos.y - Input.mousePosition.y;
             lastPos = Input.mousePosition;
 
-            foreach (var puzzlePiece in _availablePieces)
-            {
-                puzzlePiece.transform.position = Vector3.up * deltaY * _moveSpeed;
-            }
+            transform.position = new Vector3(transform.position.x, transform.position.y + _moveSpeed * deltaY);
+            //transform.RotateAround(_center.position,Vector3.right, deltaY*_moveSpeed);
         }
     }
     
@@ -57,7 +57,10 @@ public class AvailablePiecesArea : MonoBehaviour
         var count = 0;
         foreach (var piece in _availablePieces)
         {
-            piece.transform.localPosition += Vector3.down * _distnance *count;
+            piece.transform.position = new Vector3(
+                piece.transform.parent.position.x+1,
+                piece.transform.parent.position.y + _distnance * count,
+                0);
             count++;
         }
     }
