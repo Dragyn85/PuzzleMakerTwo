@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.GameCenter;
 
 public class AvailablePiecesArea : MonoBehaviour
 {
@@ -12,7 +9,7 @@ public class AvailablePiecesArea : MonoBehaviour
     private Vector3 lastPos;
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
-    [SerializeField] private Transform _center;
+    
 
     private void OnMouseDrag()
     {
@@ -36,8 +33,9 @@ public class AvailablePiecesArea : MonoBehaviour
         dragging = false;
     }
 
-    public void AddPieces(List<PuzzlePiece> piecesToAdd)
+    public void AddPiecesInRandomOrder(List<PuzzlePiece> piecesToAdd)
     {
+        piecesToAdd.Shuffle();
         foreach (PuzzlePiece puzzlePiece in piecesToAdd)
         {
             _availablePieces.Add(puzzlePiece);
@@ -57,11 +55,16 @@ public class AvailablePiecesArea : MonoBehaviour
         var count = 0;
         foreach (var piece in _availablePieces)
         {
-            piece.transform.position = new Vector3(
-                piece.transform.parent.position.x+1,
-                piece.transform.parent.position.y + _distnance * count,
+            piece.transform.localPosition = new Vector3(
+                0,
+                transform.position.y + _distnance * count,
                 0);
             count++;
         }
+    }
+
+    public void SetDistance(float heightOfPieces)
+    {
+        _distnance = heightOfPieces;
     }
 }
