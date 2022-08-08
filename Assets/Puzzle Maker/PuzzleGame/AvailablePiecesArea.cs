@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class AvailablePiecesArea : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class AvailablePiecesArea : MonoBehaviour
     private Vector3 lastPos;
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
-    
+    [SerializeField] private Transform _pieceHolder;
 
     private void OnMouseDrag()
     {
@@ -20,11 +21,10 @@ public class AvailablePiecesArea : MonoBehaviour
         }
         else
         {
-            var deltaY = lastPos.y - Input.mousePosition.y;
+            var deltaY = (lastPos.y - Input.mousePosition.y)*-1;
             lastPos = Input.mousePosition;
 
-            transform.position = new Vector3(transform.position.x, transform.position.y + _moveSpeed * deltaY);
-            //transform.RotateAround(_center.position,Vector3.right, deltaY*_moveSpeed);
+            _pieceHolder.position = new Vector3(_pieceHolder.position.x, (_pieceHolder.position.y + _moveSpeed * deltaY));
         }
     }
     
@@ -39,7 +39,7 @@ public class AvailablePiecesArea : MonoBehaviour
         foreach (PuzzlePiece puzzlePiece in piecesToAdd)
         {
             _availablePieces.Add(puzzlePiece);
-            puzzlePiece.transform.SetParent(this.transform);
+            puzzlePiece.transform.SetParent(_pieceHolder);
         }
         ArrangePieces();
     }
@@ -47,7 +47,7 @@ public class AvailablePiecesArea : MonoBehaviour
     public void AddPiece(PuzzlePiece pieceToAdd)
     {
         _availablePieces.Add(pieceToAdd);
-        pieceToAdd.transform.SetParent(this.transform);
+        pieceToAdd.transform.SetParent(_pieceHolder);
         ArrangePieces();
     }
     void ArrangePieces()
@@ -57,7 +57,7 @@ public class AvailablePiecesArea : MonoBehaviour
         {
             piece.transform.localPosition = new Vector3(
                 0,
-                transform.position.y + _distnance * count,
+                transform.position.y - _distnance * count,
                 0);
             count++;
         }

@@ -66,13 +66,6 @@ public class PuzzlePiece : MonoBehaviour
         _pieceData.puzzlePixelStartCorner = new Vector2(startPixelX, startPixelY);
     }
 
-    
-
-    public void Initialize()
-    {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-    }
-
     public void ReturnToTakenPos()
     {
         transform.position = _lastPos;
