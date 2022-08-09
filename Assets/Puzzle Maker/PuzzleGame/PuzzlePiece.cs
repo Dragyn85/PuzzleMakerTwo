@@ -15,6 +15,8 @@ public class PuzzlePiece : MonoBehaviour
     private RectTransform _rectTransform;
     private Vector3 _lastPos;
 
+    private bool _isPlacedCorrectly;
+
 
     public Vector2 CorrectPos => _pieceData.CorrectPos;
 
@@ -41,7 +43,10 @@ public class PuzzlePiece : MonoBehaviour
 
     private void OnMouseDrag()
     {
-        transform.position = GetMouseWorldPos();// + PuzzleGame.Instance.HeldOffset;
+        if(!_isPlacedCorrectly)
+        {
+            transform.position = GetMouseWorldPos();// + PuzzleGame.Instance.HeldOffset;
+        }
     }
 
     private void OnMouseUp()
@@ -74,6 +79,11 @@ public class PuzzlePiece : MonoBehaviour
     public void SetCorrectPosition(float correctX, float correctY)
     {
         _pieceData.CorrectPos = new Vector2(correctX, correctY);
+    }
+
+    public void AprovePosition()
+    {
+        _isPlacedCorrectly = true;
     }
 }
 

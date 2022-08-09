@@ -54,6 +54,7 @@ public class PuzzleGame : MonoBehaviour
         if (_puzzleBoard.CheckPosition(puzzlePiece))
         {
             puzzlePiece.transform.parent = _puzzleBoard.transform;
+            puzzlePiece.AprovePosition();
         }
         else
         {

@@ -43,13 +43,7 @@ public class AvailablePiecesArea : MonoBehaviour
         }
         ArrangePieces();
     }
-
-    public void AddPiece(PuzzlePiece pieceToAdd)
-    {
-        _availablePieces.Add(pieceToAdd);
-        pieceToAdd.transform.SetParent(_pieceHolder);
-        ArrangePieces();
-    }
+    
     void ArrangePieces()
     {
         var count = 0;
