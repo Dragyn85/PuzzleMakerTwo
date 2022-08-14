@@ -63,6 +63,12 @@ public class PuzzleGame : MonoBehaviour
         }
     }
 
+    [ContextMenu("Reset Puzzle")]
+    private void ResetPuzzle()
+    {
+        _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+    }
+
     public void SetBackGround(Sprite sprite)
     {
         _puzzleBoard.SetBackground(sprite);
