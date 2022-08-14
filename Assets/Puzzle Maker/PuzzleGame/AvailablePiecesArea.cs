@@ -61,4 +61,9 @@ public class AvailablePiecesArea : MonoBehaviour
     {
         _distnance = heightOfPieces;
     }
+
+    public void RemovePiece(PuzzlePiece puzzlePiece)
+    {
+        _availablePieces.Remove(puzzlePiece);
+    }
 }

@@ -55,6 +55,7 @@ public class PuzzleGame : MonoBehaviour
         {
             puzzlePiece.transform.parent = _puzzleBoard.transform;
             puzzlePiece.AprovePosition();
+            _availablePiecesArea.RemovePiece(puzzlePiece);
         }
         else
         {
