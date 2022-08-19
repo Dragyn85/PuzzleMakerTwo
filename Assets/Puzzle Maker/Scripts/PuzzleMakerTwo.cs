@@ -210,6 +210,8 @@ namespace PuzzleMakerTwo
             PuzzleGame parent = Instantiate(_puzzleGamePrefab,
                 Vector3.zero, Quaternion.identity);
             parent.name = _puzzleName;
+            var puzzleWidthWorldSpace = _puzzleImageSprite.texture.width / ppu;
+            var puzzleHeightWorldSpace = _puzzleImageSprite.texture.height / ppu;
             
             foreach (var piece in allPuzzlePieces)
             {
@@ -219,17 +221,23 @@ namespace PuzzleMakerTwo
                     ppu);
                 spriteMask.name = $"X{piece.X} Y{piece.Y}";
                 
+                var correctX = ((sumOfIntsToIndexArray(puzzlePieceWidths ,((int)piece.X-1))   / ppu) + ( piece.Width / ppu) / 2) 
+                    - (puzzleWidthWorldSpace/2);
+                var correctY = ((sumOfIntsToIndexArray(puzzlePieceHeights,((int)piece.Y-1))   / ppu) + (piece.Height / ppu) / 2)
+                    - (puzzleHeightWorldSpace/2);
+                
                 var prefab = Instantiate(_prefab,
                     new Vector3(
-                        (sumOfIntsToIndexArray(puzzlePieceWidths,((int)piece.X-1)) / ppu)+(piece.Width/ppu)/2,
-                        (sumOfIntsToIndexArray(puzzlePieceHeights,((int)piece.Y-1)) / ppu)+(piece.Height/ppu)/2,
+                        correctX,
+                        correctY,
                         0),
                     quaternion.identity,
                     parent.transform);
                 
-                var correctPosition = prefab.transform.localPosition; 
+                var correctPositionOriginLowerLeft = prefab.transform.localPosition;
                 
-                prefab.SetPosition(correctPosition);
+                
+                //prefab.SetPosition(new Vector2(correctX,correctY));
                 prefab.name = $"PuzzlePiece {count}";
 
                 var newTexture = new Texture2D(mask.width, mask.height);
@@ -252,6 +260,8 @@ namespace PuzzleMakerTwo
                     ppu);
                 var savedSpriteaswell = SaveSpriteAsAsset(textureSprite, texturepath);
                 prefab.SetSprite(savedSpriteaswell);
+                //prefab.SetPosition(new Vector2(correctX,correctY));
+                prefab.SetCorrectPosition(correctX, correctY);
                 prefab.SetBoardPosition(piece.X, piece.Y);
                 prefab.SetCornerStart(sumOfIntsToIndexArray(puzzlePieceWidths, piece.X - 1),
                     sumOfIntsToIndexArray(puzzlePieceHeights, piece.Y - 1));
@@ -267,7 +277,11 @@ namespace PuzzleMakerTwo
             var parentPrefabPath = Path.Combine(Application.dataPath,
                 _savePath + "/" + _puzzleName + ".prefab");
             parent.FindPieces();
+            parent.SetBackGround(_puzzleImageSprite);
+            var heightOfPieces = (float)height / _rows + _knobSize * 2;
+            parent.SetPiecesDistance(heightOfPieces/ppu);
             var parentPrefab = PrefabUtility.SaveAsPrefabAsset(parent.gameObject,parentPrefabPath);
+            
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             
@@ -362,8 +376,6 @@ namespace PuzzleMakerTwo
             PuzzlePieceDatas = new List<puzzlePieceData>();
         }
     }
-
-    
 
     public struct Knobs
     {

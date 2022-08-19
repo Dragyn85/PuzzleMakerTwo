@@ -13,6 +13,9 @@ public class PuzzlePiece : MonoBehaviour
     private PuzzleGame _puzzleGame;
     [SerializeField] private puzzlePieceData _pieceData;
     private RectTransform _rectTransform;
+    private Vector3 _lastPos;
+
+    private bool _isPlacedCorrectly;
 
 
     public Vector2 CorrectPos => _pieceData.CorrectPos;
@@ -24,31 +27,12 @@ public class PuzzlePiece : MonoBehaviour
         
     }
 
-    private void CalculateCorrectPosition()
-    {
-        _pieceData.CorrectPos = _pieceData.puzzlePixelStartCorner / _spriteRenderer.sprite.pixelsPerUnit;
-    }
-
-    public void SetPosition(Vector2 correctPos)
-    {
-        _pieceData.x = correctPos.x;
-        _pieceData.y = correctPos.y;
-    }
-    
-    public void Bind(puzzlePieceData pieceData)
-    {
-        _pieceData = pieceData;
-    }
-    
-    public puzzlePieceData GetData()
-    {
-        return _pieceData;
-    }
-
     private void OnMouseDown()
     {
+        _lastPos = transform.position;
         PuzzleGame.Instance.HeldOffset = GetMouseWorldPos() - transform.position;
     }
+    
 
     Vector3 GetMouseWorldPos()
     {
@@ -59,13 +43,16 @@ public class PuzzlePiece : MonoBehaviour
 
     private void OnMouseDrag()
     {
-        transform.position = GetMouseWorldPos() + PuzzleGame.Instance.HeldOffset;
+        if(!_isPlacedCorrectly)
+        {
+            transform.position = GetMouseWorldPos();// + PuzzleGame.Instance.HeldOffset;
+        }
     }
 
     private void OnMouseUp()
     {
-        if(Vector3.Distance(_pieceData.CorrectPos,transform.localPosition) < 1)
-            MoveToCorrectPos(); 
+        if(PuzzleGame.Instance)
+            PuzzleGame.Instance.DropedPiece(this);
     }
 
     public void SetBoardPosition(int pieceX, int pieceY)
@@ -74,9 +61,9 @@ public class PuzzlePiece : MonoBehaviour
         _pieceData.y = pieceY;
     }
     
-    void MoveToCorrectPos()
+    public void MoveToPos(Vector3 pos)
     {
-        transform.localPosition = _pieceData.CorrectPos;
+        transform.position = pos;
     }
 
     public void SetCornerStart(int startPixelX, int startPixelY)
@@ -84,15 +71,19 @@ public class PuzzlePiece : MonoBehaviour
         _pieceData.puzzlePixelStartCorner = new Vector2(startPixelX, startPixelY);
     }
 
-    
-
-    public void Initialize(Vector2 upleft,Vector2 downright)
+    public void ReturnToTakenPos()
     {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-        CalculateCorrectPosition();
-        var randX = Random.Range(upleft.x, downright.x);
-        var randY = Random.Range(downright.y, upleft.y);
-        transform.position = new Vector3(randX,randY,0);
+        transform.position = _lastPos;
+    }
+
+    public void SetCorrectPosition(float correctX, float correctY)
+    {
+        _pieceData.CorrectPos = new Vector2(correctX, correctY);
+    }
+
+    public void AprovePosition()
+    {
+        _isPlacedCorrectly = true;
     }
 }
 

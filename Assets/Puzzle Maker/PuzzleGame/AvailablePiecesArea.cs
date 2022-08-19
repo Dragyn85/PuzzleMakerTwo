@@ -1,7 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class AvailablePiecesArea : MonoBehaviour
 {
@@ -11,6 +10,7 @@ public class AvailablePiecesArea : MonoBehaviour
     private Vector3 lastPos;
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
+    [SerializeField] private Transform _pieceHolder;
 
     private void OnMouseDrag()
     {
@@ -21,13 +21,10 @@ public class AvailablePiecesArea : MonoBehaviour
         }
         else
         {
-            var deltaY = lastPos.y - Input.mousePosition.y;
+            var deltaY = (lastPos.y - Input.mousePosition.y)*-1;
             lastPos = Input.mousePosition;
 
-            foreach (var puzzlePiece in _availablePieces)
-            {
-                puzzlePiece.transform.position = Vector3.up * deltaY * _moveSpeed;
-            }
+            _pieceHolder.position = new Vector3(_pieceHolder.position.x, (_pieceHolder.position.y + _moveSpeed * deltaY));
         }
     }
     
@@ -36,29 +33,37 @@ public class AvailablePiecesArea : MonoBehaviour
         dragging = false;
     }
 
-    public void AddPieces(List<PuzzlePiece> piecesToAdd)
+    public void AddPiecesInRandomOrder(List<PuzzlePiece> piecesToAdd)
     {
+        piecesToAdd.Shuffle();
         foreach (PuzzlePiece puzzlePiece in piecesToAdd)
         {
             _availablePieces.Add(puzzlePiece);
-            puzzlePiece.transform.SetParent(this.transform);
+            puzzlePiece.transform.SetParent(_pieceHolder);
         }
         ArrangePieces();
     }
-
-    public void AddPiece(PuzzlePiece pieceToAdd)
-    {
-        _availablePieces.Add(pieceToAdd);
-        pieceToAdd.transform.SetParent(this.transform);
-        ArrangePieces();
-    }
+    
     void ArrangePieces()
     {
         var count = 0;
         foreach (var piece in _availablePieces)
         {
-            piece.transform.localPosition += Vector3.down * _distnance *count;
+            piece.transform.localPosition = new Vector3(
+                0,
+                transform.position.y - _distnance * count,
+                0);
             count++;
         }
+    }
+
+    public void SetDistance(float heightOfPieces)
+    {
+        _distnance = heightOfPieces;
+    }
+
+    public void RemovePiece(PuzzlePiece puzzlePiece)
+    {
+        _availablePieces.Remove(puzzlePiece);
     }
 }

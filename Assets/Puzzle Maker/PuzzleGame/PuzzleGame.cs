@@ -16,6 +16,8 @@ public class PuzzleGame : MonoBehaviour
 
     [SerializeField] private List<PuzzlePiece> _puzzlePieces;
     [SerializeField] private AvailablePiecesArea _availablePiecesArea;
+    [SerializeField] private PuzzleBoard _puzzleBoard;
+    
 
     private Camera cam;
 
@@ -43,10 +45,37 @@ public class PuzzleGame : MonoBehaviour
     private void Start()
     {
         FindPieces();
-        _availablePiecesArea.AddPieces(_puzzlePieces);
+        _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
     }
 
-    
 
-    
+    public void DropedPiece(PuzzlePiece puzzlePiece)
+    {
+        if (_puzzleBoard.CheckPosition(puzzlePiece))
+        {
+            puzzlePiece.transform.parent = _puzzleBoard.transform;
+            puzzlePiece.AprovePosition();
+            _availablePiecesArea.RemovePiece(puzzlePiece);
+        }
+        else
+        {
+            puzzlePiece.ReturnToTakenPos();
+        }
+    }
+
+    [ContextMenu("Reset Puzzle")]
+    private void ResetPuzzle()
+    {
+        _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+    }
+
+    public void SetBackGround(Sprite sprite)
+    {
+        _puzzleBoard.SetBackground(sprite);
+    }
+
+    public void SetPiecesDistance(float heightOfPieces)
+    {
+        _availablePiecesArea.SetDistance(heightOfPieces);
+    }
 }
