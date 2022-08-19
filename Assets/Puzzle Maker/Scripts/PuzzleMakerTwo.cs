@@ -2,53 +2,113 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
 namespace PuzzleMakerTwo
 {
 
-    public class PuzzleMakerTwo : MonoBehaviour
+    public class PuzzleMakerTwo : EditorWindow
     {
-        private const string PrefabOutputPrefix = "PiecePrefab";
-
-        [Header("1. Select sprite for puzzle")] [SerializeField]
         private Sprite _puzzleImageSprite;
-
-        [Header("Decide, puzzle size with amount of rows/columns and pixels for the pieces")]
-
-        [SerializeField] private int _columns = 3;
-
-        [SerializeField] private int _rows = 3;
-
-        [Header("Decide knob design, only symmetrical are supported.")] [SerializeField]
+        private Sprite _tempSprite;
         private Texture2D _knob;
+        private int _columns = 3;
+        private int _rows = 3;
+        private int _knobSize = 32;
 
-        [SerializeField] private int _knobSize = 32;
-
-        [Header("SavingPaths")] [SerializeField]
         string _savePath = "MyPuzzleMaker/Output";
-
-        [SerializeField] private string _puzzleName = "mypuzzle";
-
-
-        [SerializeField] private PuzzlePiece _prefab;
-        [SerializeField] private PuzzleGame _puzzleGamePrefab;
-
-
+        private string _puzzleName = "mypuzzle";
+        private PuzzlePiece _prefab;
+        private PuzzleGame _puzzleGamePrefab;
         private PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
+        private const string PREFIX = "PuzzleMakerValue";
 
 
-        //[ContextMenu("Creat Puzzle")]
-        [MenuItem("MyMenu/Creat Puzzle")]
-        public static void FindAndCreatPuzzle()
+
+        [MenuItem("Puzzle Maker Two/Open puzzle maker")]
+        public static void ShowWindow()
         {
-            FindObjectOfType<PuzzleMakerTwo>().CreatPuzzle();
+            var window = GetWindow<PuzzleMakerTwo>();
+            
+        }
+        
+        
+
+        private void OnGUI()
+        {
+            
+            
+            EditorGUILayout.LabelField("Puzzle Maker Window");
+            EditorGUILayout.BeginHorizontal();
+            
+            //First Column
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.LabelField("Puzzle settings");
+            _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+            _columns = EditorGUILayout.IntField("How many columns",_columns);
+            _rows = EditorGUILayout.IntField("How many columns",_rows);
+            EditorGUILayout.LabelField("Knobs settings");
+            _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D));
+            _knobSize = EditorGUILayout.IntField("Knob size",_knobSize);
+
+            _puzzleGamePrefab = (PuzzleGame)EditorGUI.ObjectField(Rect.zero, _puzzleGamePrefab, typeof(PuzzleGame));
+            _prefab = (PuzzlePiece)EditorGUI.ObjectField(Rect.zero, _prefab, typeof(PuzzlePiece));
+            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.BeginVertical();
+            
+            if (GUILayout.Button("Creat puzzle"))
+                CreatPuzzle();
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void OnEnable()
+        {
+            _knobSize = EditorPrefs.GetInt(PREFIX + "KnobSize");
+            _columns = EditorPrefs.GetInt(PREFIX + "Columns");
+            _rows = EditorPrefs.GetInt(PREFIX+"Rows");
+            
+            var spritePath = EditorPrefs.GetString(PREFIX + "SpritePath");
+            if (!string.IsNullOrEmpty(spritePath))
+                _puzzleImageSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            
+            var knobPath = EditorPrefs.GetString(PREFIX + "KnobPath");
+            if (!string.IsNullOrEmpty(knobPath))
+                _knob = AssetDatabase.LoadAssetAtPath<Texture2D>(knobPath);
+            
+            
+        }
+
+        void OnDestroy()
+        {
+            EditorPrefs.SetInt(PREFIX+"KnobSize",_knobSize);
+            EditorPrefs.SetInt(PREFIX+"Columns",_columns);
+            EditorPrefs.SetInt(PREFIX+"Rows",_rows);
+
+            if (_puzzleImageSprite != null)
+            {
+                var SpritePath =AssetDatabase.GetAssetPath(_puzzleImageSprite);
+                EditorPrefs.SetString(PREFIX+"SpritePath",SpritePath);
+            }
+            if (_puzzleImageSprite != null)
+            {
+                var knobPath =AssetDatabase.GetAssetPath(_knob);
+                EditorPrefs.SetString(PREFIX+"KnobPath",knobPath);
+            }
+
+
         }
 
         int sumOfIntsToIndexArray(int[] array,int index)
         {
+
+            
+            
             var sum = 0;
             for (int i = 0; i <= index; i++)
             {
@@ -60,11 +120,29 @@ namespace PuzzleMakerTwo
 
         public void CreatPuzzle()
         {
+            _puzzleImageSprite = Sprite.Create(_tempSprite.texture,_tempSprite.rect,_tempSprite.pivot,_tempSprite.pixelsPerUnit);
+            var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
+            _puzzleGamePrefab = puzzleGames.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - GamePrefab");
+            if (_puzzleGamePrefab == null)
+            {
+                Debug.LogError("Can not find PuzzleMakerPuzzle - GamePrefab, ");
+                return;
+            }
+
+            var puzzlePieces = MyEditorTools.Tools.FindAssetsWithExtension<PuzzlePiece>(".prefab");
+            _prefab = puzzlePieces.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - PiecePrefab");
+            if (_prefab == null)
+            {
+                Debug.LogError("Can not find PuzzleMakerPuzzle - PiecePrefab");
+                return;
+            }
+            
             Texture2D puzzleTexture = CopyTexture2D(_puzzleImageSprite.texture);
             var width = _puzzleImageSprite.texture.width;
             var height = _puzzleImageSprite.texture.height;
             int[] puzzlePieceWidths = new int[_columns];
             int[] puzzlePieceHeights = new int[_rows];
+            
 
             DividePixels(width, puzzlePieceWidths);
             DividePixels(height,puzzlePieceHeights);
@@ -285,6 +363,8 @@ namespace PuzzleMakerTwo
             
             DestroyImmediate(parent.gameObject);
         }
+
+        
 
         private Texture2D CopyTexture2D(Texture2D texture)
         {

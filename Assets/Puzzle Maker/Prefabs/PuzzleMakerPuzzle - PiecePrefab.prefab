@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7782186991725680881}
   - component: {fileID: 4226682706534013044}
   m_Layer: 0
-  m_Name: PuzzlePiece
+  m_Name: PuzzleMakerPuzzle - PiecePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
