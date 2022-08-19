@@ -49,22 +49,25 @@ namespace PuzzleMakerTwo
             //First Column
             EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField("Puzzle settings");
-            _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+            _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite),false);
             _columns = EditorGUILayout.IntField("How many columns",_columns);
             _rows = EditorGUILayout.IntField("How many columns",_rows);
             EditorGUILayout.LabelField("Knobs settings");
-            _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D));
+            _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D),false);
             _knobSize = EditorGUILayout.IntField("Knob size",_knobSize);
 
-            _puzzleGamePrefab = (PuzzleGame)EditorGUI.ObjectField(Rect.zero, _puzzleGamePrefab, typeof(PuzzleGame));
-            _prefab = (PuzzlePiece)EditorGUI.ObjectField(Rect.zero, _prefab, typeof(PuzzlePiece));
+            _puzzleGamePrefab = (PuzzleGame)EditorGUI.ObjectField(Rect.zero, _puzzleGamePrefab, typeof(PuzzleGame),false);
+            _prefab = (PuzzlePiece)EditorGUI.ObjectField(Rect.zero, _prefab, typeof(PuzzlePiece),false);
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginVertical();
             EditorGUILayout.BeginHorizontal();
             _savePath = EditorGUILayout.TextField(_savePath);
-            if(GUILayout.Button("Select folder"))
+            if (GUILayout.Button("Select folder"))
+            {
                 _savePath = EditorUtility.OpenFolderPanel("Select save folder", Application.dataPath, "");
+                _savePath =_savePath.Substring(Application.dataPath.Length+1);
+            }
             EditorGUILayout.EndHorizontal();
             _puzzleName = EditorGUILayout.TextField(_puzzleName);
             if (GUILayout.Button("Creat puzzle"))
@@ -81,7 +84,7 @@ namespace PuzzleMakerTwo
             
             var spritePath = EditorPrefs.GetString(PREFIX + "SpritePath");
             if (!string.IsNullOrEmpty(spritePath))
-                _puzzleImageSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+                _tempSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             
             var knobPath = EditorPrefs.GetString(PREFIX + "KnobPath");
             if (!string.IsNullOrEmpty(knobPath))
