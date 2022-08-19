@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 namespace PuzzleMakerTwo
@@ -60,7 +61,12 @@ namespace PuzzleMakerTwo
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.BeginVertical();
-            
+            EditorGUILayout.BeginHorizontal();
+            _savePath = EditorGUILayout.TextField(_savePath);
+            if(GUILayout.Button("Select folder"))
+                _savePath = EditorUtility.OpenFolderPanel("Select save folder", Application.dataPath, "");
+            EditorGUILayout.EndHorizontal();
+            _puzzleName = EditorGUILayout.TextField(_puzzleName);
             if (GUILayout.Button("Creat puzzle"))
                 CreatPuzzle();
             EditorGUILayout.EndVertical();
