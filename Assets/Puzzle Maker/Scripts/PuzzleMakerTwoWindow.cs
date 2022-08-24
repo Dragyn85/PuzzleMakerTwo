@@ -29,16 +29,17 @@ namespace PuzzleMakerTwo
         {
             var window = GetWindow<PuzzleMakerTwoWindow>();
         }
-        
+
         private void OnGUI()
         {
-            
+
             EditorGUILayout.LabelField("Puzzle Maker Window");
             EditorGUILayout.BeginHorizontal();
-            
+
             //First Column
             EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField("Puzzle settings");
+
             if (_tempSprite != null && !_tempSprite.texture.isReadable)
             {
                 var precolor = GUI.color;
@@ -49,12 +50,17 @@ namespace PuzzleMakerTwo
                 _conditions[nameof(_tempSprite)].SetCondition(false);
             }
             else if (_tempSprite == null)
-                _conditions[nameof(_tempSprite)].SetCondition(false);
-            else
             {
+                _conditions[nameof(_tempSprite)].SetCondition(false);
+                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+            }
+        else
+
+        {
                 _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
                 _conditions[nameof(_tempSprite)].SetCondition(true);
             }
+            
             _columns = EditorGUILayout.IntField("How many columns",_columns);
             _conditions[nameof(_columns)].SetCondition(_columns > 1);
             _rows = EditorGUILayout.IntField("How many columns",_rows);

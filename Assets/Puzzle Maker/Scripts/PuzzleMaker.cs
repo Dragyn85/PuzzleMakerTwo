@@ -17,92 +17,14 @@ namespace PuzzleMakerTwo
         private PuzzleGame _puzzleGamePrefab;
         private PuzzlePiece _puzzlePiecePrefab;
         private PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
+        private int _columns;
+        private int _rows;
+        private int _knobSize;
+        private Texture2D _knobTexture2D;
         private const string PREFIX = "PuzzleMakerValue";
 
-
-
-        [MenuItem("Puzzle Maker Two/Open puzzle maker")]
-        public static void ShowWindow()
-        {
-            var window = GetWindow<PuzzleMakerTwo>();
-            
-        }
         
-        
-
-        private void OnGUI()
-        {
-            
-            
-            EditorGUILayout.LabelField("Puzzle Maker Window");
-            EditorGUILayout.BeginHorizontal();
-            
-            //First Column
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.LabelField("Puzzle settings");
-            _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite),false);
-            _columns = EditorGUILayout.IntField("How many columns",_columns);
-            _rows = EditorGUILayout.IntField("How many columns",_rows);
-            EditorGUILayout.LabelField("Knobs settings");
-            _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D),false);
-            _knobSize = EditorGUILayout.IntField("Knob size",_knobSize);
-
-            _puzzleGamePrefab = (PuzzleGame)EditorGUI.ObjectField(Rect.zero, _puzzleGamePrefab, typeof(PuzzleGame),false);
-            _prefab = (PuzzlePiece)EditorGUI.ObjectField(Rect.zero, _prefab, typeof(PuzzlePiece),false);
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.BeginHorizontal();
-            _savePath = EditorGUILayout.TextField(_savePath);
-            if (GUILayout.Button("Select folder"))
-            {
-                _savePath = EditorUtility.OpenFolderPanel("Select save folder", Application.dataPath, "");
-                _savePath =_savePath.Substring(Application.dataPath.Length+1);
-            }
-            EditorGUILayout.EndHorizontal();
-            _puzzleName = EditorGUILayout.TextField(_puzzleName);
-            if (GUILayout.Button("Creat puzzle"))
-                CreatPuzzle();
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private void OnEnable()
-        {
-            _knobSize = EditorPrefs.GetInt(PREFIX + "KnobSize");
-            _columns = EditorPrefs.GetInt(PREFIX + "Columns");
-            _rows = EditorPrefs.GetInt(PREFIX+"Rows");
-            
-            var spritePath = EditorPrefs.GetString(PREFIX + "SpritePath");
-            if (!string.IsNullOrEmpty(spritePath))
-                _tempSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-            
-            var knobPath = EditorPrefs.GetString(PREFIX + "KnobPath");
-            if (!string.IsNullOrEmpty(knobPath))
-                _knob = AssetDatabase.LoadAssetAtPath<Texture2D>(knobPath);
-            
-            
-        }
-
-        void OnDestroy()
-        {
-            EditorPrefs.SetInt(PREFIX+"KnobSize",_knobSize);
-            EditorPrefs.SetInt(PREFIX+"Columns",_columns);
-            EditorPrefs.SetInt(PREFIX+"Rows",_rows);
-
-            if (_puzzleImageSprite != null)
-            {
-                var SpritePath =AssetDatabase.GetAssetPath(_puzzleImageSprite);
-                EditorPrefs.SetString(PREFIX+"SpritePath",SpritePath);
-            }
-            if (_puzzleImageSprite != null)
-            {
-                var knobPath =AssetDatabase.GetAssetPath(_knob);
-                EditorPrefs.SetString(PREFIX+"KnobPath",knobPath);
-            }
-
-
-        }
+       
 
         int sumOfIntsToIndexArray(int[] array,int index)
         {
