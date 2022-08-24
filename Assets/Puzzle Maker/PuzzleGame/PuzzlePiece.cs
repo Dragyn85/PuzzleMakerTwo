@@ -11,11 +11,17 @@ public class PuzzlePiece : MonoBehaviour
     [SerializeField] private puzzlePieceData _pieceData;
     private RectTransform _rectTransform;
     private Vector3 _lastPos;
+    
 
     private bool _isPlacedCorrectly;
 
 
     public Vector2 CorrectPos => _pieceData.CorrectPos;
+
+    private void Awake()
+    {
+        _puzzleGame = GetComponentInParent<PuzzleGame>();
+    }
 
     public void SetSprite(Sprite newSprite)
     {
@@ -27,7 +33,7 @@ public class PuzzlePiece : MonoBehaviour
     private void OnMouseDown()
     {
         _lastPos = transform.position;
-        PuzzleGame.Instance.HeldOffset = GetMouseWorldPos() - transform.position;
+        _puzzleGame.HeldOffset = GetMouseWorldPos() - transform.position;
     }
     
 
@@ -48,8 +54,12 @@ public class PuzzlePiece : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if(PuzzleGame.Instance)
-            PuzzleGame.Instance.DropedPiece(this);
+        if(_puzzleGame)
+            _puzzleGame.DropedPiece(this);
+    }
+    public void Reset()
+    {
+        _isPlacedCorrectly = false;
     }
 
     public void SetBoardPosition(int pieceX, int pieceY)

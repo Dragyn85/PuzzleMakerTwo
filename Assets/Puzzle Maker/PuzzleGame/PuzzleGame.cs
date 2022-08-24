@@ -1,10 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class PuzzleGame : MonoBehaviour
 {
-    public static PuzzleGame Instance { get; private set; }
+    public event Action PuzzleCompleted;
     public Vector3 HeldOffset { get; set; }
 
     [SerializeField] private List<PuzzlePiece> _puzzlePieces;
@@ -14,21 +16,7 @@ public class PuzzleGame : MonoBehaviour
 
     private Camera cam;
 
-    private void Awake()
-    {
-        cam = Camera.main;
-        
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Debug.LogError("Second PuzzleGames tried to initialize by " + gameObject.name);
-        }
-    }
-
-    
+   
 
     public void FindPieces()
     {
@@ -39,6 +27,29 @@ public class PuzzleGame : MonoBehaviour
     {
         FindPieces();
         _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+        _availablePiecesArea.AvailablePiecesChanged += HandleAvailablePiecesChanged;
+    }
+
+    private void OnDestroy()
+    {
+        _availablePiecesArea.AvailablePiecesChanged -= HandleAvailablePiecesChanged;
+    }
+
+    private void HandleAvailablePiecesChanged()
+    {
+        if (_availablePiecesArea.PiecesLeft <= 0)
+        {
+            PuzzleCompleted?.Invoke();
+            StartCoroutine(RestartGameAfterDelay(3f));
+        }
+    }
+
+    private IEnumerator RestartGameAfterDelay(float f)
+    {
+        
+        yield return new WaitForSeconds(f);
+        ResetPuzzle();
+
     }
 
 
@@ -60,6 +71,10 @@ public class PuzzleGame : MonoBehaviour
     private void ResetPuzzle()
     {
         _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+        foreach (var puzzlePiece in _puzzlePieces)
+        {
+            puzzlePiece.Reset();
+        }
     }
 
     public void SetBackGround(Sprite sprite)
