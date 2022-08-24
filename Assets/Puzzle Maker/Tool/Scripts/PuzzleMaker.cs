@@ -5,9 +5,7 @@ using System.IO;
 using System.Linq;
 using TextureEditing;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEditor;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 namespace PuzzleMakerTwo

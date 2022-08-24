@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -5,12 +6,14 @@ using UnityEngine.Serialization;
 public class AvailablePiecesArea : MonoBehaviour
 {
     private HashSet<PuzzlePiece> _availablePieces = new HashSet<PuzzlePiece>();
+    public event Action AvailablePiecesChanged;
     
     private bool dragging;
     private Vector3 lastPos;
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
     [SerializeField] private Transform _pieceHolder;
+    public int PiecesLeft => _availablePieces.Count;
 
     private void OnMouseDrag()
     {
@@ -65,5 +68,7 @@ public class AvailablePiecesArea : MonoBehaviour
     public void RemovePiece(PuzzlePiece puzzlePiece)
     {
         _availablePieces.Remove(puzzlePiece);
+        ArrangePieces();
+        AvailablePiecesChanged?.Invoke();
     }
 }
