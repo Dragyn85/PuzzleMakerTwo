@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using PuzzleMakerTwo;
 using UnityEngine;
 
@@ -163,3 +164,4 @@ public class PuzzlePieceInit
         return _knobs;
     }
 }
+#endif
