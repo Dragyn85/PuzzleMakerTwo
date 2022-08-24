@@ -1,9 +1,6 @@
 using System;
-using PuzzleMakerTwo;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
-using Random = UnityEngine.Random;
+
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class PuzzlePiece : MonoBehaviour
