@@ -14,7 +14,7 @@ namespace PuzzleMakerTwo
     {
         private PuzzleGame _puzzleGamePrefab;
         private PuzzlePiece _puzzlePiecePrefab;
-        private PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
+        private PuzzleBoardLayout puzzleBoardLayout;
         private int _columns;
         private int _rows;
         private int _knobSize;
@@ -41,17 +41,11 @@ namespace PuzzleMakerTwo
             int[] puzzlePieceHeights = DivideIntsEvenly(height,rows);
 
             //Creat PuzzleBoard
-            _puzzleBoard = new PuzzleBoard<PuzzlePieceInit>(columns, rows, 1,
-                Vector3.zero, CreatePuzzlePiece,puzzlePieceWidths,puzzlePieceHeights);
+            puzzleBoardLayout = new PuzzleBoardLayout(columns, rows, 1,
+                Vector3.zero,puzzlePieceWidths,puzzlePieceHeights);
 
-            
-            var allPuzzlePieces = _puzzleBoard.GetAll();
-
-            
-            for (int i = 0; i < allPuzzlePieces.Count; i++)
-            {
-                allPuzzlePieces[i].SetKnobs();
-            }
+            //Catch all puzzlePieces
+            var allPuzzlePieces = puzzleBoardLayout.GetAll();
 
             //Creats Male and Female Knobs in all direction in the correct size.
             Texture2D rightKnobTextureMale = MakeKnobTexture();
@@ -250,10 +244,7 @@ namespace PuzzleMakerTwo
         }
 
         //Method for creating puzzlePieces passed to the PuzzleBoard
-        PuzzlePieceInit CreatePuzzlePiece(PuzzleBoard<PuzzlePieceInit> g, int x, int y,int width, int height)
-        {
-            return new PuzzlePieceInit(g, x, y,height,width);
-        }
+        
 
         int sumOfIntsToIndexArray(int[] array,int index)
         {

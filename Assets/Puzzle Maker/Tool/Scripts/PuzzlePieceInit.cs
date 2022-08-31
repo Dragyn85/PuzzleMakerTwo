@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PuzzlePieceInit
 {
-    PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
+    PuzzleBoardLayout puzzleBoardLayout;
     int _x;
     int _y;
     private Knobs _knobs;
@@ -13,9 +13,9 @@ public class PuzzlePieceInit
     private int _width;
     
 
-    public PuzzlePieceInit(PuzzleBoard<PuzzlePieceInit> puzzleBoard,int x, int y,int height,int width)
+    public PuzzlePieceInit(PuzzleBoardLayout puzzleBoardLayout,int x, int y,int height,int width)
     {
-        _puzzleBoard = puzzleBoard;
+        this.puzzleBoardLayout = puzzleBoardLayout;
         _x = x;
         _y = y;
         _height = height;
@@ -40,10 +40,10 @@ public class PuzzlePieceInit
 
     private void SetPieceNeighbour()
     {
-        _knobs.Left.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x - 1, _y);
-        _knobs.Down.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x, _y - 1);
-        _knobs.Top.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x, _y + 1);
-        _knobs.Right.PuzzlePieceInit = _puzzleBoard.GetGridObject(_x + 1, _y);
+        _knobs.Left.PuzzlePieceInit = puzzleBoardLayout.GetGridObject(_x - 1, _y);
+        _knobs.Down.PuzzlePieceInit = puzzleBoardLayout.GetGridObject(_x, _y - 1);
+        _knobs.Top.PuzzlePieceInit = puzzleBoardLayout.GetGridObject(_x, _y + 1);
+        _knobs.Right.PuzzlePieceInit = puzzleBoardLayout.GetGridObject(_x + 1, _y);
     }
 
     private void SetKnobsPositionAndGender()
@@ -132,7 +132,7 @@ public class PuzzlePieceInit
     public PuzzlePieceInit GetNeighbour(Vector2 direction)
     {
         Vector2 side = new Vector2(_x, _y) + direction;
-        return _puzzleBoard.GetGridObject((int)side.x, (int)side.y);
+        return puzzleBoardLayout.GetGridObject((int)side.x, (int)side.y);
         
     }
 

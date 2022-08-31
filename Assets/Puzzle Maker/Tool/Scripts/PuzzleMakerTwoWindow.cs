@@ -19,7 +19,7 @@ namespace PuzzleMakerTwo
         private string _puzzleName = "mypuzzle";
         private PuzzlePiece _prefab;
         private PuzzleGame _puzzleGamePrefab;
-        private PuzzleBoard<PuzzlePieceInit> _puzzleBoard;
+        private PuzzleBoardLayout puzzleBoardLayout;
         private const string PREFIX = "PuzzleMakerValue";
 
         private Dictionary<string, Condition> _conditions =
