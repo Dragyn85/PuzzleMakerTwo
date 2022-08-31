@@ -21,22 +21,6 @@ namespace PuzzleMakerTwo
         private Texture2D _knobTexture2D;
         private const string PREFIX = "PuzzleMakerValue";
 
-        
-       
-
-        int sumOfIntsToIndexArray(int[] array,int index)
-        {
-
-            
-            
-            var sum = 0;
-            for (int i = 0; i <= index; i++)
-            {
-                sum += array[i];
-            }
-
-            return sum;
-        }
 
         public void CreatPuzzle(Sprite puzzleImageSprite, int columns, int rows,Texture2D knobTexture2D, int knobSize, string savePath,string puzzleName)
         {
@@ -45,25 +29,16 @@ namespace PuzzleMakerTwo
             _knobSize = knobSize;
             _knobTexture2D = knobTexture2D;
             
-            if (!TryGetGamePrefabs()) return;
-
             Texture2D puzzleTexture = CopyTexture2D(puzzleImageSprite.texture);
             var width = puzzleImageSprite.texture.width;
             var height = puzzleImageSprite.texture.height;
-            int[] puzzlePieceWidths = new int[columns];
-            int[] puzzlePieceHeights = new int[rows];
+           
             
-
-            DividePixels(width, puzzlePieceWidths);
-            DividePixels(height,puzzlePieceHeights);
-
-            var total = sumOfIntsToIndexArray(puzzlePieceWidths, puzzlePieceWidths.Length - 1);
             
-            //Method for creating puzzlePieces passed to the PuzzleBoard
-            PuzzlePieceInit CreatePuzzlePiece(PuzzleBoard<PuzzlePieceInit> g, int x, int y,int width, int height)
-            {
-                return new PuzzlePieceInit(g, x, y,height,width);
-            }
+            if (!TryGetGamePrefabs()) return;
+
+            int[] puzzlePieceWidths = DivideIntsEvenly(width, columns);
+            int[] puzzlePieceHeights = DivideIntsEvenly(height,rows);
 
             //Creat PuzzleBoard
             _puzzleBoard = new PuzzleBoard<PuzzlePieceInit>(columns, rows, 1,
@@ -274,6 +249,26 @@ namespace PuzzleMakerTwo
             GameObject.DestroyImmediate(parent.gameObject);
         }
 
+        //Method for creating puzzlePieces passed to the PuzzleBoard
+        PuzzlePieceInit CreatePuzzlePiece(PuzzleBoard<PuzzlePieceInit> g, int x, int y,int width, int height)
+        {
+            return new PuzzlePieceInit(g, x, y,height,width);
+        }
+
+        int sumOfIntsToIndexArray(int[] array,int index)
+        {
+
+            
+            
+            var sum = 0;
+            for (int i = 0; i <= index; i++)
+            {
+                sum += array[i];
+            }
+
+            return sum;
+        }
+
         private bool TryGetGamePrefabs()
         {
             var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
@@ -303,25 +298,27 @@ namespace PuzzleMakerTwo
             return copy;
         }
 
-        private void DividePixels(int amount, int[] TargetArray)
+        private int[] DivideIntsEvenly(int AmountToDivide, int divideWith)
         {
-            var first = (int)Mathf.Floor(amount / TargetArray.Length);
+            int[] intsEvenly = new int[divideWith];
+            var first = (int)Mathf.Floor(AmountToDivide / intsEvenly.Length);
 
             // Calculater individual pieces width
-            TargetArray[0] = first;
-            for (int i = 1; i < TargetArray.Length - 1; i++)
+            intsEvenly[0] = first;
+            for (int i = 1; i < intsEvenly.Length - 1; i++)
             {
-                var currentBaseXpos = ((float)amount / _columns) * (i + 1);
-                int temp = sumOfIntsToIndexArray(TargetArray, i - 1) + first;
+                var currentBaseXpos = ((float)AmountToDivide / _columns) * (i + 1);
+                int temp = sumOfIntsToIndexArray(intsEvenly, i - 1) + first;
 
                 if (currentBaseXpos - temp >= 1)
-                    TargetArray[i] = first + 1;
+                    intsEvenly[i] = first + 1;
                 else
-                    TargetArray[i] = first;
+                    intsEvenly[i] = first;
             }
 
-            var currentSum = sumOfIntsToIndexArray(TargetArray, TargetArray.Length - 1);
-            TargetArray[TargetArray.Length - 1] = amount - currentSum;
+            var currentSum = sumOfIntsToIndexArray(intsEvenly, intsEvenly.Length - 1);
+            intsEvenly[intsEvenly.Length - 1] = AmountToDivide - currentSum;
+            return intsEvenly;
         }
 
 
