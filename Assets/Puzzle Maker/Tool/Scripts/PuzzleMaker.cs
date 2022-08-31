@@ -19,6 +19,14 @@ namespace PuzzleMakerTwo
         private int _rows;
         private int _knobSize;
         private Texture2D _knobTexture2D;
+        private Texture2D _rightKnobTextureMale;
+        private Texture2D downKnobTextureMale;
+        private Texture2D leftKnobTextureMale;
+        private Texture2D upperKnobTextureMale;
+        private Texture2D _upperKnobTextureFemale;
+        private Texture2D _rightKnobTextureFemale;
+        private Texture2D _downKnobTextureFemale;
+        private Texture2D leftKnobTextureFemale;
         private const string PREFIX = "PuzzleMakerValue";
 
 
@@ -47,21 +55,9 @@ namespace PuzzleMakerTwo
             //Catch all puzzlePieces
             var allPuzzlePieces = puzzleBoardLayout.GetAll();
 
-            //Creats Male and Female Knobs in all direction in the correct size.
-            Texture2D rightKnobTextureMale = MakeKnobTexture();
-            rightKnobTextureMale.Apply();
+            CreatKnobTextures();
 
-            var downKnobTextureMale = TextureRotate.rotateTexture(rightKnobTextureMale, true);
-            var leftKnobTextureMale = TextureRotate.rotateTexture(downKnobTextureMale, true);
-            var upperKnobTextureMale = TextureRotate.rotateTexture(rightKnobTextureMale, false);
 
-            Texture2D leftKnobTextureFemale = SpriteMerger.InvertMask(rightKnobTextureMale);
-
-            var upperKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, true);
-            var rightKnobTextureFemale = TextureRotate.rotateTexture(upperKnobTextureFemale, true);
-            var downKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, false);
-
-            
             foreach (var puzzlePiece in allPuzzlePieces)
             {
                 List<Texture2D> textures = new List<Texture2D>();
@@ -93,13 +89,13 @@ namespace PuzzleMakerTwo
                     tempPieceInit = puzzlePiece.GetNeighbour(Vector2.right);
                     if (!tempPieceInit.IsKnobMale(Vector2.left))
                         finalMask = SpriteMerger.InsertMask(finalMask,
-                            rightKnobTextureMale,
+                            _rightKnobTextureMale,
                             new Vector2(maskTexture2D.width - knobSize,
                                 puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + knobSize / 2));
                     //new Vector2(maskTexture.width - _knobSize , maskTexture.height / 2 - _knobSize / 2));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
-                            rightKnobTextureFemale,
+                            _rightKnobTextureFemale,
                             new Vector2(maskTexture2D.width - knobSize * 2,
                                 puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + knobSize / 2));
                 }
@@ -114,7 +110,7 @@ namespace PuzzleMakerTwo
                                 maskTexture2D.height - knobSize));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
-                            upperKnobTextureFemale,
+                            _upperKnobTextureFemale,
                             new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + knobSize / 2,
                                 maskTexture2D.height - knobSize * 2));
                 }
@@ -148,7 +144,7 @@ namespace PuzzleMakerTwo
                                 0));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
-                            downKnobTextureFemale,
+                            _downKnobTextureFemale,
                             new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (knobSize / 2),
                                 knobSize));
                 }
@@ -241,6 +237,23 @@ namespace PuzzleMakerTwo
             AssetDatabase.Refresh();
             
             GameObject.DestroyImmediate(parent.gameObject);
+        }
+
+        private void CreatKnobTextures()
+        {
+            //Creats Male and Female Knobs in all direction in the correct size.
+            _rightKnobTextureMale = MakeKnobTexture();
+            _rightKnobTextureMale.Apply();
+
+            downKnobTextureMale = TextureRotate.rotateTexture(_rightKnobTextureMale, true);
+            leftKnobTextureMale = TextureRotate.rotateTexture(downKnobTextureMale, true);
+            upperKnobTextureMale = TextureRotate.rotateTexture(_rightKnobTextureMale, false);
+
+            leftKnobTextureFemale = SpriteMerger.InvertMask(_rightKnobTextureMale);
+
+            _upperKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, true);
+            _rightKnobTextureFemale = TextureRotate.rotateTexture(_upperKnobTextureFemale, true);
+            _downKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, false);
         }
 
         //Method for creating puzzlePieces passed to the PuzzleBoard
