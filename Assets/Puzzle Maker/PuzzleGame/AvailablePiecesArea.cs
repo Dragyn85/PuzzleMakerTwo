@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -13,6 +14,8 @@ public class AvailablePiecesArea : MonoBehaviour
     [SerializeField] private float _moveSpeed = 0.2f;
     [SerializeField] private float _distnance= 1f;
     [SerializeField] private Transform _pieceHolder;
+    private float _maxScrollPos;
+    private float _minScrollPos;
     public int PiecesLeft => _availablePieces.Count;
 
     private void OnMouseDrag()
@@ -26,8 +29,9 @@ public class AvailablePiecesArea : MonoBehaviour
         {
             var deltaY = (lastPos.y - Input.mousePosition.y)*-1;
             lastPos = Input.mousePosition;
-
-            _pieceHolder.position = new Vector3(_pieceHolder.position.x, (_pieceHolder.position.y + _moveSpeed * deltaY));
+            var newYpos = _pieceHolder.position.y + _moveSpeed * deltaY;
+            newYpos = Mathf.Clamp(newYpos, _minScrollPos,_maxScrollPos);
+            _pieceHolder.position = new Vector3(_pieceHolder.position.x, newYpos);
         }
     }
     
@@ -58,6 +62,7 @@ public class AvailablePiecesArea : MonoBehaviour
                 0);
             count++;
         }
+        CalculateScrollArea();
     }
 
     public void SetDistance(float heightOfPieces)
@@ -70,5 +75,12 @@ public class AvailablePiecesArea : MonoBehaviour
         _availablePieces.Remove(puzzlePiece);
         ArrangePieces();
         AvailablePiecesChanged?.Invoke();
+        
+    }
+
+    private void CalculateScrollArea()
+    {
+        _minScrollPos = 0;
+        _maxScrollPos = _availablePieces.Count * _distnance;
     }
 }
