@@ -44,22 +44,9 @@ namespace PuzzleMakerTwo
             _rows = rows;
             _knobSize = knobSize;
             _knobTexture2D = knobTexture2D;
-            var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
-            _puzzleGamePrefab = puzzleGames.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - GamePrefab");
-            if (_puzzleGamePrefab == null)
-            {
-                Debug.LogError("Can not find PuzzleMakerPuzzle - GamePrefab, ");
-                return;
-            }
-
-            var puzzlePieces = MyEditorTools.Tools.FindAssetsWithExtension<PuzzlePiece>(".prefab");
-            _puzzlePiecePrefab = puzzlePieces.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - PiecePrefab");
-            if (_puzzlePiecePrefab == null)
-            {
-                Debug.LogError("Can not find PuzzleMakerPuzzle - PiecePrefab");
-                return;
-            }
             
+            if (!TryGetGamePrefabs()) return;
+
             Texture2D puzzleTexture = CopyTexture2D(puzzleImageSprite.texture);
             var width = puzzleImageSprite.texture.width;
             var height = puzzleImageSprite.texture.height;
@@ -287,7 +274,27 @@ namespace PuzzleMakerTwo
             GameObject.DestroyImmediate(parent.gameObject);
         }
 
-        
+        private bool TryGetGamePrefabs()
+        {
+            var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
+            _puzzleGamePrefab = puzzleGames.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - GamePrefab");
+            if (_puzzleGamePrefab == null)
+            {
+                Debug.LogError("Can not find PuzzleMakerPuzzle - GamePrefab, ");
+                return false;
+            }
+
+            var puzzlePieces = MyEditorTools.Tools.FindAssetsWithExtension<PuzzlePiece>(".prefab");
+            _puzzlePiecePrefab = puzzlePieces.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - PiecePrefab");
+            if (_puzzlePiecePrefab == null)
+            {
+                Debug.LogError("Can not find PuzzleMakerPuzzle - PiecePrefab");
+                return false;
+            }
+
+            return true;
+        }
+
 
         private Texture2D CopyTexture2D(Texture2D texture)
         {
