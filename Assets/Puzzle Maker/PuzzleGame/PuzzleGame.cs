@@ -17,8 +17,14 @@ public class PuzzleGame : MonoBehaviour
     private Camera cam;
 
    
-
-    public void FindPieces()
+    public void Initialize(Sprite puzzleImageSprite, float pieceHeight)
+    {
+        FindPieces();
+        SetBackGround(puzzleImageSprite);
+        var pieceHeightInWorlsSpace = pieceHeight / puzzleImageSprite.pixelsPerUnit;
+        SetPiecesDistance(pieceHeight / pieceHeightInWorlsSpace);
+    }
+    void FindPieces()
     {
         _puzzlePieces = GetComponentsInChildren<PuzzlePiece>().ToList();
     }
@@ -77,12 +83,12 @@ public class PuzzleGame : MonoBehaviour
         }
     }
 
-    public void SetBackGround(Sprite sprite)
+    void SetBackGround(Sprite sprite)
     {
         _puzzleBoard.SetBackground(sprite);
     }
 
-    public void SetPiecesDistance(float heightOfPieces)
+    void SetPiecesDistance(float heightOfPieces)
     {
         _availablePiecesArea.SetDistance(heightOfPieces);
     }

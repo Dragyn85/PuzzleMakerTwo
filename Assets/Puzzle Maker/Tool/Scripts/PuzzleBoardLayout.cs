@@ -12,8 +12,6 @@ namespace PuzzleMakerTwo
     public class PuzzleBoardLayout
     {
 
-        public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
-
         public class OnGridObjectChangedEventArgs : EventArgs
         {
             public int x;

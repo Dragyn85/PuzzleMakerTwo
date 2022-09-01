@@ -24,6 +24,8 @@ namespace PuzzleMakerTwo
 
         private Dictionary<string, Condition> _conditions =
             new Dictionary<string, Condition>();
+        private bool _createGame;
+
         [MenuItem("Puzzle Maker Two/Open puzzle maker")]
         public static void ShowWindow()
         {
@@ -110,7 +112,8 @@ namespace PuzzleMakerTwo
             _conditions[nameof(_puzzleName)].SetCondition(prefab == null);
 
             var isMissingCondition = _conditions.Values.Where(t => t.Accepted() == false).ToList();
-            
+
+            _createGame = EditorGUILayout.Toggle("Create Game",_createGame);
             if (isMissingCondition.Count > 0)
             {
                 GUI.enabled = false;
@@ -121,7 +124,7 @@ namespace PuzzleMakerTwo
             if (GUILayout.Button("Creat puzzle"))
             {
                 var puzzleMakerTwo = new PuzzleMaker();
-                puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, _savePath, _puzzleName);
+                puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, _savePath, _puzzleName,_createGame);
             }
 
             foreach (var condition in isMissingCondition)
@@ -168,6 +171,7 @@ namespace PuzzleMakerTwo
             EditorPrefs.SetInt(PREFIX + "Rows", _rows);
             EditorPrefs.SetString(PREFIX + "path", _savePath);
             EditorPrefs.SetString(PREFIX + "puzzleName", _puzzleName);
+            EditorPrefs.SetBool(PREFIX + "CreatGame", _createGame);
 
             if (_tempSprite != null)
             {
@@ -186,6 +190,7 @@ namespace PuzzleMakerTwo
             _knobSize = EditorPrefs.GetInt(PREFIX + "KnobSize");
             _columns = EditorPrefs.GetInt(PREFIX + "Columns");
             _rows = EditorPrefs.GetInt(PREFIX + "Rows");
+            _createGame = EditorPrefs.GetBool(PREFIX + "CreatGame");
             var path = EditorPrefs.GetString(PREFIX + "path");
             if (!string.IsNullOrWhiteSpace(path))
                 _savePath = path;
