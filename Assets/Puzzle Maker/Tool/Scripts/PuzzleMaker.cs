@@ -119,14 +119,14 @@ namespace PuzzleMakerTwo
                     else
                         newTexture.SetPixel(x, y, Color.clear);
 
-            var texturepath = savePath + "/" + puzzleName + count + ".png";
+            var texturepath = savePath + "/" + puzzleName + count;
 
             if (Directory.Exists(Path.GetDirectoryName(texturepath)))
                 Debug.Log("Ask to overwrite");
             Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
             var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
                 ppu);
-            savedSpriteaswell = SaveSpriteAsAsset(textureSprite, texturepath);
+            savedSpriteaswell = SaveSpriteAsPNG(textureSprite, texturepath);
         }
 
         private void CreatePuzzleGame(int knobSize, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int count, float ppu, PuzzleGame parent, float puzzleWidthWorldSpace, float puzzleHeightWorldSpace, PuzzlePieceInit piece, Texture2D newTexture, Sprite savedSpriteaswell)
@@ -298,13 +298,17 @@ namespace PuzzleMakerTwo
             return sum;
         }
 
+        /// <summary>
+        /// Tries to find Puzzle Game dependancies prefabs
+        /// </summary>
+        /// <returns>true if dependancies are found</returns>
         private bool TryGetGamePrefabs()
         {
             var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
             _puzzleGamePrefab = puzzleGames.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - GamePrefab");
             if (_puzzleGamePrefab == null)
             {
-                Debug.LogError("Can not find PuzzleMakerPuzzle - GamePrefab, ");
+                Debug.LogError("Can not find PuzzleMakerPuzzle - GamePrefab");
                 return false;
             }
 
@@ -327,6 +331,12 @@ namespace PuzzleMakerTwo
             return copy;
         }
 
+        /// <summary>
+        /// Takes an integer and to be divided as equally as possible
+        /// </summary>
+        /// <param name="AmountToDivide"></param>
+        /// <param name="divideWith"></param>
+        /// <returns>Array of ints, each holding a divided part of the Input integer</returns>
         private int[] DivideIntsEvenly(int AmountToDivide, int divideWith)
         {
             int[] intsEvenly = new int[divideWith];
@@ -350,11 +360,16 @@ namespace PuzzleMakerTwo
             return intsEvenly;
         }
 
-
-        Sprite SaveSpriteAsAsset(Sprite sprite, string proj_path)
+        /// <summary>
+        /// Exports a png and returns the sprite
+        /// </summary>
+        /// <param name="sprite">Sprite to be Exported</param>
+        /// <param name="proj_path">Path to be exported to</param>
+        /// <returns></returns>
+        Sprite SaveSpriteAsPNG(Sprite sprite, string proj_path)
         {
             var abs_path = Path.Combine(Application.dataPath, proj_path);
-            proj_path = Path.Combine("Assets", proj_path);
+            proj_path = Path.Combine("Assets", proj_path+ ".png");
 
             Directory.CreateDirectory(Path.GetDirectoryName(abs_path));
             File.WriteAllBytes(abs_path, ImageConversion.EncodeToPNG(sprite.texture));
@@ -374,17 +389,13 @@ namespace PuzzleMakerTwo
 
         }
 
-
+        /// <summary>
+        /// returns a copy and scaled _knobTexture2D to the height and width of the _knobs
+        /// </summary>
+        /// <returns></returns>
         private Texture2D MakeKnobTexture()
         {
-            var newTexture = new Texture2D(_knobTexture2D.width, _knobTexture2D.height);
-            for (int x = 0; x < newTexture.width; x++)
-            {
-                for (int y = 0; y < newTexture.height; y++)
-                {
-                    newTexture.SetPixel(x, y, _knobTexture2D.GetPixel(x, y));
-                }
-            }
+            var newTexture = CopyTexture2D(_knobTexture2D);
 
             newTexture.Apply();
             TextureScale.Scale(newTexture, _knobSize, _knobSize);
