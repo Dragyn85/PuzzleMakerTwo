@@ -44,7 +44,7 @@ namespace PuzzleMakerTwo
             {
                 var precolor = GUI.color;
                 GUI.color = Color.red;
-                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite),false);
                 EditorGUILayout.LabelField("Enable read/write access in for this sprite");
                 GUI.color = precolor;
                 _conditions[nameof(_tempSprite)].SetCondition(false);
@@ -52,12 +52,12 @@ namespace PuzzleMakerTwo
             else if (_tempSprite == null)
             {
                 _conditions[nameof(_tempSprite)].SetCondition(false);
-                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite),false);
             }
         else
 
         {
-                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite));
+                _tempSprite = (Sprite)EditorGUILayout.ObjectField(_tempSprite, typeof(Sprite),false);
                 _conditions[nameof(_tempSprite)].SetCondition(true);
             }
             
@@ -71,7 +71,7 @@ namespace PuzzleMakerTwo
             {
                 var precolor = GUI.color;
                 GUI.color = Color.red;
-                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Sprite));
+                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Sprite),false);
                 EditorGUILayout.LabelField("Enable read/write access in for this Texture");
                 GUI.color = precolor;
                 _conditions[nameof(_knob)].SetCondition(false);
@@ -82,7 +82,7 @@ namespace PuzzleMakerTwo
             }
             else
             {
-                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D));
+                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D),false);
                 _conditions[nameof(_knob)].SetCondition(true);
             }
 

@@ -36,126 +36,30 @@ namespace PuzzleMakerTwo
             _rows = rows;
             _knobSize = knobSize;
             _knobTexture2D = knobTexture2D;
-            
+
             Texture2D puzzleTexture = CopyTexture2D(puzzleImageSprite.texture);
             var width = puzzleImageSprite.texture.width;
             var height = puzzleImageSprite.texture.height;
-           
-            
-            
+
+
+
             if (!TryGetGamePrefabs()) return;
 
             int[] puzzlePieceWidths = DivideIntsEvenly(width, columns);
-            int[] puzzlePieceHeights = DivideIntsEvenly(height,rows);
+            int[] puzzlePieceHeights = DivideIntsEvenly(height, rows);
 
             //Creat PuzzleBoard
             puzzleBoardLayout = new PuzzleBoardLayout(columns, rows, 1,
-                Vector3.zero,puzzlePieceWidths,puzzlePieceHeights);
+                Vector3.zero, puzzlePieceWidths, puzzlePieceHeights);
 
             //Catch all puzzlePieces
             var allPuzzlePieces = puzzleBoardLayout.GetAll();
 
             CreatKnobTextures();
 
-
-            foreach (var puzzlePiece in allPuzzlePieces)
-            {
-                List<Texture2D> textures = new List<Texture2D>();
-                Texture2D maskTexture2D = new Texture2D(puzzlePiece.Width+knobSize*2, puzzlePiece.Height+knobSize*2);
-                for (int x = 0; x < maskTexture2D.width; x++)
-                    for (int y = 0; y < maskTexture2D.height; y++)
-                        maskTexture2D.SetPixel(x, y, Color.clear);
-                
-                textures.Add(maskTexture2D);
-                
-                Texture2D mainBody = new Texture2D(puzzlePiece.Width, puzzlePiece.Height);
-                for (int x = 0; x < mainBody.width; x++)
-                    for (int y = 0; y < mainBody.height; y++)
-                        mainBody.SetPixel(x, y, Color.white);
-                
-                mainBody = SpriteMerger.InsertTextureWithOffset(maskTexture2D, mainBody, new Vector2(knobSize, knobSize));
-                textures.Add(mainBody);
-                
-                var finalPiecePre = SpriteMerger.MergePuzzleMaskTexture(textures.ToArray());
-                PuzzlePieceInit tempPieceInit;
-                
-                var finalMask = new Texture2D(finalPiecePre.width, finalPiecePre.height);
-                var size = finalMask.height;
-                var colors = finalPiecePre.GetPixels();
-                finalMask.SetPixels(colors);
-                
-                if (puzzlePiece.HasNeighbourRight)
-                {
-                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.right);
-                    if (!tempPieceInit.IsKnobMale(Vector2.left))
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            _rightKnobTextureMale,
-                            new Vector2(maskTexture2D.width - knobSize,
-                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + knobSize / 2));
-                    //new Vector2(maskTexture.width - _knobSize , maskTexture.height / 2 - _knobSize / 2));
-                    else
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            _rightKnobTextureFemale,
-                            new Vector2(maskTexture2D.width - knobSize * 2,
-                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + knobSize / 2));
-                }
-                
-                if (puzzlePiece.HasNeighbourTop)
-                {
-                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.up);
-                    if (!tempPieceInit.IsKnobMale(Vector2.down))
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            upperKnobTextureMale,
-                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + knobSize / 2,
-                                maskTexture2D.height - knobSize));
-                    else
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            _upperKnobTextureFemale,
-                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + knobSize / 2,
-                                maskTexture2D.height - knobSize * 2));
-                }
-
-                if (puzzlePiece.HasNeighbourLeft)
-                {
-                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.left);
-                    if (!tempPieceInit.IsKnobMale(Vector2.right))
-                    {
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            leftKnobTextureMale,
-                            new Vector2(0,
-                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + knobSize / 2));
-                    }
-                    else
-                    {
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            leftKnobTextureFemale,
-                            new Vector2(knobSize,
-                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + knobSize / 2));
-                    }
-                }
-
-                if (puzzlePiece.HasNeighbourDown)
-                {
-                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.down);
-                    if (!tempPieceInit.IsKnobMale(Vector2.up))
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            downKnobTextureMale,
-                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (knobSize / 2),
-                                0));
-                    else
-                        finalMask = SpriteMerger.InsertMask(finalMask,
-                            _downKnobTextureFemale,
-                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (knobSize / 2),
-                                knobSize));
-                }
-                
-
-                finalMask.Apply();
-                puzzlePiece.SetTexture(finalMask);
-            }
+            CreatePuzzlePieceTextureMasks(allPuzzlePieces);
 
             int count = 0;
-
 
             var ppu = puzzleImageSprite.pixelsPerUnit;
             PuzzleGame parent = GameObject.Instantiate(_puzzleGamePrefab,
@@ -163,7 +67,7 @@ namespace PuzzleMakerTwo
             parent.name = puzzleName;
             var puzzleWidthWorldSpace = puzzleImageSprite.texture.width / ppu;
             var puzzleHeightWorldSpace = puzzleImageSprite.texture.height / ppu;
-            
+
             foreach (var piece in allPuzzlePieces)
             {
                 count++;
@@ -171,12 +75,12 @@ namespace PuzzleMakerTwo
                 var spriteMask = Sprite.Create(mask, new Rect(0, 0, mask.width, mask.height), new Vector2(0.5f, 0.5f),
                     ppu);
                 spriteMask.name = $"X{piece.X} Y{piece.Y}";
-                
-                var correctX = ((sumOfIntsToIndexArray(puzzlePieceWidths ,((int)piece.X-1))   / ppu) + ( piece.Width / ppu) / 2) 
-                    - (puzzleWidthWorldSpace/2);
-                var correctY = ((sumOfIntsToIndexArray(puzzlePieceHeights,((int)piece.Y-1))   / ppu) + (piece.Height / ppu) / 2)
-                    - (puzzleHeightWorldSpace/2);
-                
+
+                var correctX = ((sumOfIntsToIndexArray(puzzlePieceWidths, ((int)piece.X - 1)) / ppu) + (piece.Width / ppu) / 2)
+                    - (puzzleWidthWorldSpace / 2);
+                var correctY = ((sumOfIntsToIndexArray(puzzlePieceHeights, ((int)piece.Y - 1)) / ppu) + (piece.Height / ppu) / 2)
+                    - (puzzleHeightWorldSpace / 2);
+
                 var prefab = GameObject.Instantiate(_puzzlePiecePrefab,
                     new Vector3(
                         correctX,
@@ -184,27 +88,27 @@ namespace PuzzleMakerTwo
                         0),
                     quaternion.identity,
                     parent.transform);
-                
+
                 var correctPositionOriginLowerLeft = prefab.transform.localPosition;
-                
-                
+
+
                 //prefab.SetPosition(new Vector2(correctX,correctY));
                 prefab.name = $"PuzzlePiece {count}";
 
                 var newTexture = new Texture2D(mask.width, mask.height);
-                var startPixelX = sumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X-1)-knobSize;
-                var startPixelY = sumOfIntsToIndexArray(puzzlePieceHeights, (int)piece.Y-1)-knobSize;
-                
+                var startPixelX = sumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X - 1) - knobSize;
+                var startPixelY = sumOfIntsToIndexArray(puzzlePieceHeights, (int)piece.Y - 1) - knobSize;
+
                 for (int x = 0; x < mask.width; x++)
                     for (int y = 0; y < mask.height; y++)
                         if (mask.GetPixel(x, y) == Color.white)
-                            newTexture.SetPixel(x,y,puzzleTexture.GetPixel(x + startPixelX, y + startPixelY));
+                            newTexture.SetPixel(x, y, puzzleTexture.GetPixel(x + startPixelX, y + startPixelY));
                         else
-                            newTexture.SetPixel(x,y,Color.clear);
-                        
+                            newTexture.SetPixel(x, y, Color.clear);
+
                 var texturepath = savePath + "/" + puzzleName + count + ".png";
-                
-                if(Directory.Exists(Path.GetDirectoryName(texturepath)))
+
+                if (Directory.Exists(Path.GetDirectoryName(texturepath)))
                     Debug.Log("Ask to overwrite");
                 Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
                 var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
@@ -216,27 +120,133 @@ namespace PuzzleMakerTwo
                 prefab.SetBoardPosition(piece.X, piece.Y);
                 prefab.SetCornerStart(sumOfIntsToIndexArray(puzzlePieceWidths, piece.X - 1),
                     sumOfIntsToIndexArray(puzzlePieceHeights, piece.Y - 1));
-                
+
                 var puzzleMoveGrabCollider = prefab.gameObject.AddComponent<BoxCollider2D>();
                 puzzleMoveGrabCollider.isTrigger = false;
                 puzzleMoveGrabCollider.size =
-                    new Vector2((newTexture.width - 2 * knobSize)/ppu, (newTexture.height - 2 * knobSize)/ppu);
+                    new Vector2((newTexture.width - 2 * knobSize) / ppu, (newTexture.height - 2 * knobSize) / ppu);
 
                 AssetDatabase.SaveAssets();
 
             }
+
+
             var parentPrefabPath = Path.Combine(Application.dataPath,
                 savePath + "/" + puzzleName + ".prefab");
             parent.FindPieces();
             parent.SetBackGround(puzzleImageSprite);
             var heightOfPieces = (float)height / rows + knobSize * 2;
-            parent.SetPiecesDistance(heightOfPieces/ppu);
-            var parentPrefab = PrefabUtility.SaveAsPrefabAsset(parent.gameObject,parentPrefabPath);
-            
+            parent.SetPiecesDistance(heightOfPieces / ppu);
+            var parentPrefab = PrefabUtility.SaveAsPrefabAsset(parent.gameObject, parentPrefabPath);
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            
+
             GameObject.DestroyImmediate(parent.gameObject);
+        }
+
+
+        /// <summary>
+        /// Creates a mask with knobs for all of the puzzle pieces.
+        /// </summary>
+        /// <param name="allPuzzlePieces"></param>
+        private void CreatePuzzlePieceTextureMasks(List<PuzzlePieceInit> allPuzzlePieces)
+        {
+            foreach (var puzzlePiece in allPuzzlePieces)
+            {
+                List<Texture2D> textures = new List<Texture2D>();
+                Texture2D maskTexture2D = new Texture2D(puzzlePiece.Width + _knobSize * 2, puzzlePiece.Height + _knobSize * 2);
+                for (int x = 0; x < maskTexture2D.width; x++)
+                    for (int y = 0; y < maskTexture2D.height; y++)
+                        maskTexture2D.SetPixel(x, y, Color.clear);
+
+                textures.Add(maskTexture2D);
+
+                Texture2D mainBody = new Texture2D(puzzlePiece.Width, puzzlePiece.Height);
+                for (int x = 0; x < mainBody.width; x++)
+                    for (int y = 0; y < mainBody.height; y++)
+                        mainBody.SetPixel(x, y, Color.white);
+
+                mainBody = SpriteMerger.InsertTextureWithOffset(maskTexture2D, mainBody, new Vector2(_knobSize, _knobSize));
+                textures.Add(mainBody);
+
+                var finalPiecePre = SpriteMerger.MergePuzzleMaskTexture(textures.ToArray());
+                PuzzlePieceInit tempPieceInit;
+
+                var finalMask = new Texture2D(finalPiecePre.width, finalPiecePre.height);
+                var size = finalMask.height;
+                var colors = finalPiecePre.GetPixels();
+                finalMask.SetPixels(colors);
+
+                if (puzzlePiece.HasNeighbourRight)
+                {
+                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.right);
+                    if (!tempPieceInit.IsKnobMale(Vector2.left))
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            _rightKnobTextureMale,
+                            new Vector2(maskTexture2D.width - _knobSize,
+                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
+                    //new Vector2(maskTexture.width - _knobSize , maskTexture.height / 2 - _knobSize / 2));
+                    else
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            _rightKnobTextureFemale,
+                            new Vector2(maskTexture2D.width - _knobSize * 2,
+                                puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
+                }
+
+                if (puzzlePiece.HasNeighbourTop)
+                {
+                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.up);
+                    if (!tempPieceInit.IsKnobMale(Vector2.down))
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            upperKnobTextureMale,
+                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
+                                maskTexture2D.height - _knobSize));
+                    else
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            _upperKnobTextureFemale,
+                            new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
+                                maskTexture2D.height - _knobSize * 2));
+                }
+
+                if (puzzlePiece.HasNeighbourLeft)
+                {
+                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.left);
+                    if (!tempPieceInit.IsKnobMale(Vector2.right))
+                    {
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            leftKnobTextureMale,
+                            new Vector2(0,
+                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + _knobSize / 2));
+                    }
+                    else
+                    {
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            leftKnobTextureFemale,
+                            new Vector2(_knobSize,
+                                puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + _knobSize / 2));
+                    }
+                }
+
+                if (puzzlePiece.HasNeighbourDown)
+                {
+                    tempPieceInit = puzzlePiece.GetNeighbour(Vector2.down);
+                    if (!tempPieceInit.IsKnobMale(Vector2.up))
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            downKnobTextureMale,
+                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (_knobSize / 2),
+                                0));
+                    else
+                        finalMask = SpriteMerger.InsertMask(finalMask,
+                            _downKnobTextureFemale,
+                            new Vector2(puzzlePiece.GetKnobs().Down.pos * puzzlePiece.Width + (_knobSize / 2),
+                                _knobSize));
+                }
+
+
+                finalMask.Apply();
+                puzzlePiece.SetTexture(finalMask);
+            }
         }
 
         private void CreatKnobTextures()
