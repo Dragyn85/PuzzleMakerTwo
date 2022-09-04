@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using TextureEditing;
@@ -26,7 +27,7 @@ namespace PuzzleMakerTwo
         private Texture2D _upperKnobTextureFemale;
         private Texture2D _rightKnobTextureFemale;
         private Texture2D _downKnobTextureFemale;
-        private Texture2D leftKnobTextureFemale;
+        private Texture2D _leftKnobTextureFemale;
 
         public void CreatPuzzle(Sprite puzzleImageSprite, int columns, int rows,Texture2D knobTexture2D, int knobSize, string savePath,string puzzleName,bool createGame)
         {
@@ -58,9 +59,13 @@ namespace PuzzleMakerTwo
 
             int count = 0;
             var ppu = puzzleImageSprite.pixelsPerUnit;
-            PuzzleGame parent = GameObject.Instantiate(_puzzleGamePrefab,
+            PuzzleGame parent = null;
+            if (createGame)
+            {
+                parent = GameObject.Instantiate(_puzzleGamePrefab,
                 Vector3.zero, Quaternion.identity);
-            parent.name = puzzleName;
+                parent.name = puzzleName;
+            }
             var puzzleWidthWorldSpace = puzzleImageSprite.texture.width / ppu;
             var puzzleHeightWorldSpace = puzzleImageSprite.texture.height / ppu;
 
@@ -97,10 +102,46 @@ namespace PuzzleMakerTwo
 
                 
             }
-            GameObject.DestroyImmediate(parent.gameObject);
+            if(parent != null)
+                GameObject.DestroyImmediate(parent.gameObject);
         }
 
-        private void CreateTextures(int knobSize, string savePath, string puzzleName, Texture2D puzzleTexture, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int count, float ppu, PuzzlePieceInit piece, out Texture2D newTexture, out Sprite savedSpriteaswell)
+        public Texture2D GetPreviewPiece(Sprite image, int columns, int rows, Texture2D knobTexture2D, int knobSize)
+        {
+            _columns = columns;
+            _rows = rows;
+            _knobSize = knobSize;
+            _knobTexture2D = knobTexture2D;
+
+            CreatKnobTextures();
+            var size = new Vector2(image.texture.width / _columns, image.texture.height / _rows);
+            size.x = MathF.Floor(size.x);
+            size.y = MathF.Floor(size.y);
+
+            var background = new Texture2D((int)size.x+knobSize, (int)size.y+knobSize);
+            ChangeAllPixels(background,Color.clear);
+
+            var body = new Texture2D((int)size.x, (int)size.y);
+            ChangeAllPixels(body,Color.white);
+            background = SpriteMerger.InsertTextureWithOffset(background, body, Vector2.zero);
+            background = SpriteMerger.InsertTextureWithOffset(background, _rightKnobTextureMale,new Vector2(size.x,size.y/2-knobSize/2));
+            background = SpriteMerger.InsertTextureWithOffset(background, _upperKnobTextureMale, new Vector2(size.x / 2 - knobSize / 2, size.y));
+            background = SpriteMerger.InsertMask (background, _leftKnobTextureFemale, new Vector2(0, size.y / 2 - knobSize / 2));
+            background = SpriteMerger.InsertMask (background, _downKnobTextureFemale, new Vector2(size.x / 2 - knobSize / 2, 0));
+            
+            return background;
+
+        }
+
+        private static void ChangeAllPixels(Texture2D background, Color color)
+        {
+            var pixels = background.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = color;
+            background.SetPixels(pixels);
+        }
+
+        private void CreateTextures(int knobSize, string savePath, string puzzleName, Texture2D puzzleTexture, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int count, float ppu, PuzzlePieceInit piece, out Texture2D newTexture, out Sprite exportedSprite)
         {
             
             var mask = piece.GetMask();
@@ -122,11 +163,10 @@ namespace PuzzleMakerTwo
             var texturepath = savePath + "/" + puzzleName + count;
 
             if (Directory.Exists(Path.GetDirectoryName(texturepath)))
-                Debug.Log("Ask to overwrite");
             Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
             var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
                 ppu);
-            savedSpriteaswell = SaveSpriteAsPNG(textureSprite, texturepath);
+            exportedSprite = SaveSpriteAsPNG(textureSprite, texturepath);
         }
 
         private void CreatePuzzleGame(int knobSize, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int count, float ppu, PuzzleGame parent, float puzzleWidthWorldSpace, float puzzleHeightWorldSpace, PuzzlePieceInit piece, Texture2D newTexture, Sprite savedSpriteaswell)
@@ -169,23 +209,24 @@ namespace PuzzleMakerTwo
         {
             foreach (var puzzlePiece in allPuzzlePieces)
             {
-                List<Texture2D> textures = new List<Texture2D>();
-                Texture2D maskTexture2D = new Texture2D(puzzlePiece.Width + _knobSize * 2, puzzlePiece.Height + _knobSize * 2);
-                for (int x = 0; x < maskTexture2D.width; x++)
-                    for (int y = 0; y < maskTexture2D.height; y++)
-                        maskTexture2D.SetPixel(x, y, Color.clear);
+                List<Texture2D> allTexturesForPuzzlePiece = new List<Texture2D>();
 
-                textures.Add(maskTexture2D);
+                Texture2D wholePuzzlePieceTexture = new Texture2D(puzzlePiece.Width + _knobSize * 2, puzzlePiece.Height + _knobSize * 2);
+                for (int x = 0; x < wholePuzzlePieceTexture.width; x++)
+                    for (int y = 0; y < wholePuzzlePieceTexture.height; y++)
+                        wholePuzzlePieceTexture.SetPixel(x, y, Color.clear);
+
+                allTexturesForPuzzlePiece.Add(wholePuzzlePieceTexture);
 
                 Texture2D mainBody = new Texture2D(puzzlePiece.Width, puzzlePiece.Height);
                 for (int x = 0; x < mainBody.width; x++)
                     for (int y = 0; y < mainBody.height; y++)
                         mainBody.SetPixel(x, y, Color.white);
 
-                mainBody = SpriteMerger.InsertTextureWithOffset(maskTexture2D, mainBody, new Vector2(_knobSize, _knobSize));
-                textures.Add(mainBody);
+                mainBody = SpriteMerger.InsertTextureWithOffset(wholePuzzlePieceTexture, mainBody, new Vector2(_knobSize, _knobSize));
+                allTexturesForPuzzlePiece.Add(mainBody);
 
-                var finalPiecePre = SpriteMerger.MergePuzzleMaskTexture(textures.ToArray());
+                var finalPiecePre = SpriteMerger.MergePuzzleMaskTexture(allTexturesForPuzzlePiece.ToArray());
                 PuzzlePieceInit tempPieceInit;
 
                 var finalMask = new Texture2D(finalPiecePre.width, finalPiecePre.height);
@@ -199,13 +240,13 @@ namespace PuzzleMakerTwo
                     if (!tempPieceInit.IsKnobMale(Vector2.left))
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             _rightKnobTextureMale,
-                            new Vector2(maskTexture2D.width - _knobSize,
+                            new Vector2(wholePuzzlePieceTexture.width - _knobSize,
                                 puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
                     //new Vector2(maskTexture.width - _knobSize , maskTexture.height / 2 - _knobSize / 2));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             _rightKnobTextureFemale,
-                            new Vector2(maskTexture2D.width - _knobSize * 2,
+                            new Vector2(wholePuzzlePieceTexture.width - _knobSize * 2,
                                 puzzlePiece.GetKnobs().Right.pos * puzzlePiece.Height + _knobSize / 2));
                 }
 
@@ -216,12 +257,12 @@ namespace PuzzleMakerTwo
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             _upperKnobTextureMale,
                             new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
-                                maskTexture2D.height - _knobSize));
+                                wholePuzzlePieceTexture.height - _knobSize));
                     else
                         finalMask = SpriteMerger.InsertMask(finalMask,
                             _upperKnobTextureFemale,
                             new Vector2(puzzlePiece.GetKnobs().Top.pos * puzzlePiece.Width + _knobSize / 2,
-                                maskTexture2D.height - _knobSize * 2));
+                                wholePuzzlePieceTexture.height - _knobSize * 2));
                 }
 
                 if (puzzlePiece.HasNeighbourLeft)
@@ -237,7 +278,7 @@ namespace PuzzleMakerTwo
                     else
                     {
                         finalMask = SpriteMerger.InsertMask(finalMask,
-                            leftKnobTextureFemale,
+                            _leftKnobTextureFemale,
                             new Vector2(_knobSize,
                                 puzzlePiece.GetKnobs().Left.pos * puzzlePiece.Height + _knobSize / 2));
                     }
@@ -274,11 +315,11 @@ namespace PuzzleMakerTwo
             _leftKnobTextureMale = TextureRotate.rotateTexture(_downKnobTextureMale, true);
             _upperKnobTextureMale = TextureRotate.rotateTexture(_rightKnobTextureMale, false);
 
-            leftKnobTextureFemale = SpriteMerger.InvertMask(_rightKnobTextureMale);
+            _leftKnobTextureFemale = SpriteMerger.InvertMask(_rightKnobTextureMale);
 
-            _upperKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, true);
+            _upperKnobTextureFemale = TextureRotate.rotateTexture(_leftKnobTextureFemale, true);
             _rightKnobTextureFemale = TextureRotate.rotateTexture(_upperKnobTextureFemale, true);
-            _downKnobTextureFemale = TextureRotate.rotateTexture(leftKnobTextureFemale, false);
+            _downKnobTextureFemale = TextureRotate.rotateTexture(_leftKnobTextureFemale, false);
         }
 
         //Method for creating puzzlePieces passed to the PuzzleBoard
@@ -368,8 +409,9 @@ namespace PuzzleMakerTwo
         /// <returns></returns>
         Sprite SaveSpriteAsPNG(Sprite sprite, string proj_path)
         {
-            var abs_path = Path.Combine(Application.dataPath, proj_path);
-            proj_path = Path.Combine("Assets", proj_path+ ".png");
+            var pathWithLineEnding = proj_path + ".png";
+            var abs_path = Path.Combine(Application.dataPath, pathWithLineEnding);
+            proj_path = Path.Combine("Assets", pathWithLineEnding);
 
             Directory.CreateDirectory(Path.GetDirectoryName(abs_path));
             File.WriteAllBytes(abs_path, ImageConversion.EncodeToPNG(sprite.texture));

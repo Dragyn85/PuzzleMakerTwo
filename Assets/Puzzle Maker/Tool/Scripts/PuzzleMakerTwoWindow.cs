@@ -25,11 +25,14 @@ namespace PuzzleMakerTwo
         private Dictionary<string, Condition> _conditions =
             new Dictionary<string, Condition>();
         private bool _createGame;
+        private Texture2D _preview;
+        private static PuzzleMakerTwoWindow _window;
 
         [MenuItem("Puzzle Maker Two/Open puzzle maker")]
         public static void ShowWindow()
         {
             var window = GetWindow<PuzzleMakerTwoWindow>();
+            _window = window;
         }
 
         private void OnGUI()
@@ -97,20 +100,22 @@ namespace PuzzleMakerTwo
             EditorGUILayout.BeginVertical();
             EditorGUILayout.BeginHorizontal();
             _savePath = EditorGUILayout.TextField(_savePath);
+            string selectedPath= _savePath;
             if (GUILayout.Button("Select folder"))
             {
-                _savePath = EditorUtility.OpenFolderPanel("Select save folder", Application.dataPath, "");
+                selectedPath = EditorUtility.OpenFolderPanel("Select save folder", Application.dataPath, "");
+                _savePath = selectedPath;
                 if (_savePath.StartsWith(Application.dataPath))
                     _savePath = _savePath.Substring(Application.dataPath.Length + 1);
+                Debug.Log($"{selectedPath}/{_puzzleName}1.png");
             }
             
             EditorGUILayout.EndHorizontal();
             _puzzleName = EditorGUILayout.TextField(_puzzleName);
-            var prefabs = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
-            var prefab = prefabs.FirstOrDefault(t => t.name == _puzzleName);
-            
-            _conditions[nameof(_puzzleName)].SetCondition(prefab == null);
+            //var prefabs = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
+            //var prefab = prefabs.FirstOrDefault(t => t.name == _puzzleName);
 
+            
             var isMissingCondition = _conditions.Values.Where(t => t.Accepted() == false).ToList();
 
             _createGame = EditorGUILayout.Toggle("Create Game",_createGame);
@@ -123,8 +128,23 @@ namespace PuzzleMakerTwo
             
             if (GUILayout.Button("Creat puzzle"))
             {
-                var puzzleMakerTwo = new PuzzleMaker();
-                puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, _savePath, _puzzleName,_createGame);
+                var puzzleExists = File.Exists($"{Application.dataPath}/{_savePath}/{_puzzleName}1.png");
+                var shouldCreatPuzzle = true;
+                if (puzzleExists)
+                {
+                    shouldCreatPuzzle = EditorUtility.DisplayDialog("Puzzle Exists",
+                        "A puzzle with that name already exists, would you like to delete the exisiting one?",
+                        "Yes",
+                        "Cansel");
+                    if (shouldCreatPuzzle)
+                        DeleteDirectory();
+                }
+                if(shouldCreatPuzzle)
+                {
+
+                    var puzzleMakerTwo = new PuzzleMaker();
+                    puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, _savePath, _puzzleName, _createGame);
+                }
             }
 
             foreach (var condition in isMissingCondition)
@@ -133,6 +153,15 @@ namespace PuzzleMakerTwo
             }
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
+
+            if(GUILayout.Button("Show Preview"))
+            {
+                var pm = new PuzzleMaker();
+                _preview = pm.GetPreviewPiece(_tempSprite, _columns, _rows, _knob, _knobSize);
+
+            }
+            if(_preview != null)
+                EditorGUI.DrawPreviewTexture(new Rect(200f,100f,_preview.width, _preview.height),_preview);
         }
 
        
@@ -146,7 +175,7 @@ namespace PuzzleMakerTwo
 
         }
 
-        private void OnEnable()
+        private void OnEnable() 
         {
             LoadSettings();
             _conditions.Add(nameof(_columns),new Condition("You need at least 2 columns"));
@@ -154,7 +183,6 @@ namespace PuzzleMakerTwo
             _conditions.Add(nameof(_knobSize), new Condition("Knob size needs to be 1 or greater"));
             _conditions.Add(nameof(_knob),new Condition("Select a knob with read/write access"));
             _conditions.Add(nameof(_tempSprite),new Condition("Select a Sprite with read/write access"));
-            _conditions.Add(nameof(_puzzleName),new Condition("A prefab with that name already exists in that directory"));
         }
 
         
@@ -185,6 +213,14 @@ namespace PuzzleMakerTwo
                 EditorPrefs.SetString(PREFIX + "KnobPath", knobPath);
             }
         }
+
+
+        void DeleteDirectory()
+        {
+            var Path = $"{Application.dataPath}/{_savePath}";
+            if (Directory.Exists(Path))
+                Directory.Delete(Path,true);
+        }
         private void LoadSettings()
         {
             _knobSize = EditorPrefs.GetInt(PREFIX + "KnobSize");
@@ -205,6 +241,11 @@ namespace PuzzleMakerTwo
             var knobPath = EditorPrefs.GetString(PREFIX + "KnobPath");
             if (!string.IsNullOrEmpty(knobPath))
                 _knob = AssetDatabase.LoadAssetAtPath<Texture2D>(knobPath);
+        }
+
+        private void OnLostFocus()
+        {
+            SaveSettings();
         }
     }
 
