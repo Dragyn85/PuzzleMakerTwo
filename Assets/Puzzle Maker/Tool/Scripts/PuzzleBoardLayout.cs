@@ -20,24 +20,18 @@ namespace PuzzleMakerTwo
 
         private int width;
         private int height;
-        private float cellSize;
-        private Vector3 originPosition;
-        private PuzzlePieceInit[,] gridArray;
+        private PuzzlePieceCreationTool[,] gridArray;
         
 
         public PuzzleBoardLayout(int width,
             int height,
-            float cellSize,
-            Vector3 originPosition,
             int[] widths,
             int[] heights)
         {
             this.width = width;
             this.height = height;
-            this.cellSize = cellSize;
-            this.originPosition = originPosition;
 
-            gridArray = new PuzzlePieceInit[width, height];
+            gridArray = new PuzzlePieceCreationTool[width, height];
 
             for (int x = 0; x < gridArray.GetLength(0); x++)
             {
@@ -51,12 +45,12 @@ namespace PuzzleMakerTwo
                 piece.SetKnobs();
         }
         
-        PuzzlePieceInit CreatePuzzlePiece(PuzzleBoardLayout g, int x, int y,int width, int height)
+        PuzzlePieceCreationTool CreatePuzzlePiece(PuzzleBoardLayout g, int x, int y,int width, int height)
         {
-            return new PuzzlePieceInit(g, x, y,height,width);
+            return new PuzzlePieceCreationTool(g, x, y,height,width);
         }
 
-        public PuzzlePieceInit GetGridObject(int x, int y)
+        public PuzzlePieceCreationTool GetGridObject(int x, int y)
         {
             if (x >= 0 && y >= 0 && x < width && y < height)
             {
@@ -64,14 +58,14 @@ namespace PuzzleMakerTwo
             }
             else
             {
-                return default(PuzzlePieceInit);
+                return default(PuzzlePieceCreationTool);
             }
         }
 
 
-        public List<PuzzlePieceInit> GetAll()
+        public List<PuzzlePieceCreationTool> GetAll()
         {
-            var gridObjects = new List<PuzzlePieceInit>();
+            var gridObjects = new List<PuzzlePieceCreationTool>();
             for (int x = 0; x < gridArray.GetLength(0); x++)
             {
                 for (int y = 0; y < gridArray.GetLength(1); y++)

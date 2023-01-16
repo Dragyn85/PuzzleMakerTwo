@@ -2,7 +2,7 @@
 using PuzzleMakerTwo;
 using UnityEngine;
 
-public class PuzzlePieceInit
+public class PuzzlePieceCreationTool
 {
     PuzzleBoardLayout puzzleBoardLayout;
     int _x;
@@ -13,7 +13,7 @@ public class PuzzlePieceInit
     private int _width;
     
 
-    public PuzzlePieceInit(PuzzleBoardLayout puzzleBoardLayout,int x, int y,int height,int width)
+    public PuzzlePieceCreationTool(PuzzleBoardLayout puzzleBoardLayout,int x, int y,int height,int width)
     {
         this.puzzleBoardLayout = puzzleBoardLayout;
         _x = x;
@@ -129,7 +129,7 @@ public class PuzzlePieceInit
 
     }
 
-    public PuzzlePieceInit GetNeighbour(Vector2 direction)
+    public PuzzlePieceCreationTool GetNeighbour(Vector2 direction)
     {
         Vector2 side = new Vector2(_x, _y) + direction;
         return puzzleBoardLayout.GetGridObject((int)side.x, (int)side.y);
