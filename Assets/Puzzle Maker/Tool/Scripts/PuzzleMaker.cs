@@ -8,8 +8,10 @@ using TextureEditing;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using PuzzleMakerTwo.GameExample;
 
-namespace PuzzleMakerTwo
+
+namespace PuzzleMakerTwo.Creator
 {
     public class PuzzleMaker
     {
@@ -28,23 +30,30 @@ namespace PuzzleMakerTwo
         private Texture2D _rightKnobTextureFemale;
         private Texture2D _downKnobTextureFemale;
         private Texture2D _leftKnobTextureFemale;
+        private float _pixelsPerUnit;
+        private float puzzleWidthWorldSpace;
+        private float puzzleHeightWorldSpace;
 
-        public void CreatPuzzle(Sprite puzzleImageSprite, int columns, int rows,Texture2D knobTexture2D, int knobSize, string savePath,string puzzleName,bool createGame)
+        public void CreatPuzzle(Sprite puzzleImageSprite, int columns, int rows, Texture2D knobTexture2D, int knobSize, string savePath, string puzzleName, bool createGame)
         {
+            if (createGame && !TryGetGamePrefabs())
+            {
+                return;
+            }
+
             _columns = columns;
             _rows = rows;
             _knobSize = knobSize;
             _knobTexture2D = knobTexture2D;
 
+            string pathAndNameCombined = $"{savePath}/{puzzleName}";
+
             Texture2D puzzleTexture = CopyTexture2D(puzzleImageSprite.texture);
+
             var width = puzzleImageSprite.texture.width;
             var height = puzzleImageSprite.texture.height;
 
-
-            if (createGame && !TryGetGamePrefabs()) 
-            {
-                return;
-            }
+            
 
             //Calculate puzzle piece widths and heights as even as possible
             int[] puzzlePieceEvenWidths = DivideIntsEvenly(width, columns);
@@ -52,56 +61,68 @@ namespace PuzzleMakerTwo
 
             //Creat PuzzleBoard
             puzzleBoardLayout = new PuzzleBoardLayout(columns, rows,
-                puzzlePieceEvenWidths, puzzlePieceEvenHeights);
+                puzzlePieceEvenWidths, puzzlePieceEvenHeights, knobSize);
 
-            //Catch all puzzlePieces
-            List<PuzzlePieceCreationTool> allPuzzlePiecesUnderConstruction = puzzleBoardLayout.GetAll();
+            //Catch all puzzle piece creation tool
+            List<PuzzlePieceCreationTool> allPuzzlePiecesUnderConstruction = puzzleBoardLayout.GetAllPieces();
 
             CreatKnobTexturesFromOriginal();
 
-            CreateMasksForPuzzlePieces(allPuzzlePiecesUnderConstruction);
+            CreateMasksForPuzzlePieces(puzzleBoardLayout.GetAllPieces());
+            _pixelsPerUnit = puzzleImageSprite.pixelsPerUnit;
+            puzzleWidthWorldSpace = puzzleImageSprite.texture.width / _pixelsPerUnit;
+            puzzleHeightWorldSpace = puzzleImageSprite.texture.height / _pixelsPerUnit;
 
+            List<Sprite> sprites = CreatePuzzleSprites(pathAndNameCombined, puzzleTexture, puzzleBoardLayout.GetAllPieces());
 
-            int count = 0;
-            var ppu = puzzleImageSprite.pixelsPerUnit;
-            PuzzleGame parent = null;
             if (createGame)
             {
-                parent = GameObject.Instantiate(_puzzleGamePrefab,
-                Vector3.zero, Quaternion.identity);
-                parent.name = puzzleName;
+                CreateGame(puzzleImageSprite, puzzleName, pathAndNameCombined, puzzleBoardLayout.GetAllPieces(), _pixelsPerUnit, sprites);
             }
-            var puzzleWidthWorldSpace = puzzleImageSprite.texture.width / ppu;
-            var puzzleHeightWorldSpace = puzzleImageSprite.texture.height / ppu;
 
+        }
 
+        private List<Sprite> CreatePuzzleSprites(string pathAndNameCombined, Texture2D puzzleTexture, List<PuzzlePieceCreationTool> allPuzzlePiecesUnderConstruction)
+        {
+            List<Sprite> sprits = new List<Sprite>();
 
             foreach (var piece in allPuzzlePiecesUnderConstruction)
             {
-                count++;
-                Sprite puzzlePieceSprite = CreatePuzzlePieceSprite(knobSize, savePath, puzzleName, puzzleTexture, puzzlePieceEvenWidths, puzzlePieceEvenHeights, count, ppu, piece);
 
-                if (createGame)
-                {
-                    CreatePuzzleGame(knobSize, puzzlePieceEvenWidths, puzzlePieceEvenHeights, count, ppu, parent, puzzleWidthWorldSpace, puzzleHeightWorldSpace, piece, puzzlePieceSprite.texture, puzzlePieceSprite);
-                }
+                Sprite puzzlePieceSprite = CreatePuzzlePieceSprite(pathAndNameCombined, puzzleTexture, puzzleBoardLayout.PieceWidths, puzzleBoardLayout.PieceHeights, _pixelsPerUnit, piece);
+
+                sprits.Add(puzzlePieceSprite);
 
                 AssetDatabase.SaveAssets();
             }
-            if (createGame)
+
+            return sprits;
+        }
+
+        private void CreateGame(Sprite puzzleImageSprite, string puzzleName, string pathAndNameCombined, List<PuzzlePieceCreationTool> allPuzzlePiecesUnderConstruction, float ppu, List<Sprite> sprits)
+        {
+            PuzzleGame parent = GameObject.Instantiate(_puzzleGamePrefab,
+                                    Vector3.zero,
+                                    Quaternion.identity);
+
+            parent.name = puzzleName;
+
+            for (int i = 0; i < sprits.Count; i++)
             {
-                CreateGamePrefabs(puzzleImageSprite, rows, knobSize, savePath, puzzleName, height, parent);
+                CreatePuzzlePiecePrefabs(ppu, parent, allPuzzlePiecesUnderConstruction[i], sprits[i]);
             }
+
+            CreatePuzzleGamePrefab(puzzleImageSprite, pathAndNameCombined, parent);
+
             if (parent != null)
                 GameObject.DestroyImmediate(parent.gameObject);
         }
 
-        private static void CreateGamePrefabs(Sprite puzzleImageSprite, int rows, int knobSize, string savePath, string puzzleName, int height, PuzzleGame parent)
+        private void CreatePuzzleGamePrefab(Sprite puzzleImageSprite, string relativePath, PuzzleGame parent)
         {
             var parentPrefabPath = Path.Combine(Application.dataPath,
-                                savePath + "/" + puzzleName + ".prefab");
-            var heightOfPieces = (float)height / rows + knobSize * 2;
-            parent.Initialize(puzzleImageSprite, heightOfPieces);
+                                relativePath + ".prefab");
+            parent.SetBoardBackground(puzzleImageSprite);
 
             var parentPrefab = PrefabUtility.SaveAsPrefabAsset(parent.gameObject, parentPrefabPath);
 
@@ -121,17 +142,17 @@ namespace PuzzleMakerTwo
             size.x = MathF.Floor(size.x);
             size.y = MathF.Floor(size.y);
 
-            var background = new Texture2D((int)size.x+knobSize, (int)size.y+knobSize);
-            background = ChangeAllPixels(background,Color.clear);
+            var background = new Texture2D((int)size.x + knobSize, (int)size.y + knobSize);
+            background = ChangeAllPixels(background, Color.clear);
 
             var body = new Texture2D((int)size.x, (int)size.y);
-            body = ChangeAllPixels(body,Color.white);
+            body = ChangeAllPixels(body, Color.white);
             background = SpriteMerger.InsertTextureWithOffset(background, body, Vector2.zero);
-            background = SpriteMerger.InsertTextureWithOffset(background, _rightKnobTextureMale,new Vector2(size.x,size.y/2-knobSize/2));
+            background = SpriteMerger.InsertTextureWithOffset(background, _rightKnobTextureMale, new Vector2(size.x, size.y / 2 - knobSize / 2));
             background = SpriteMerger.InsertTextureWithOffset(background, _upperKnobTextureMale, new Vector2(size.x / 2 - knobSize / 2, size.y));
-            background = SpriteMerger.InsertMask (background, _leftKnobTextureFemale, new Vector2(0, size.y / 2 - knobSize / 2));
-            background = SpriteMerger.InsertMask (background, _downKnobTextureFemale, new Vector2(size.x / 2 - knobSize / 2, 0));
-            
+            background = SpriteMerger.InsertMask(background, _leftKnobTextureFemale, new Vector2(0, size.y / 2 - knobSize / 2));
+            background = SpriteMerger.InsertMask(background, _downKnobTextureFemale, new Vector2(size.x / 2 - knobSize / 2, 0));
+
             return background;
 
         }
@@ -146,17 +167,17 @@ namespace PuzzleMakerTwo
             return results;
         }
 
-        private Sprite CreatePuzzlePieceSprite(int knobSize, string savePath, string puzzleName, Texture2D puzzleTexture, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int pieceNumber, float ppu, PuzzlePieceCreationTool piece)
+        private Sprite CreatePuzzlePieceSprite(string fullPath, Texture2D puzzleTexture, int[] puzzlePieceWidths, int[] puzzlePieceHeights, float ppu, PuzzlePieceCreationTool piece)
         {
-            
+
             var mask = piece.GetMask();
             var spriteMask = Sprite.Create(mask, new Rect(0, 0, mask.width, mask.height), new Vector2(0.5f, 0.5f),
                 ppu);
             spriteMask.name = $"X{piece.X} Y{piece.Y}";
 
             var newTexture = new Texture2D(mask.width, mask.height);
-            var startPixelX = sumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X - 1) - knobSize;
-            var startPixelY = sumOfIntsToIndexArray(puzzlePieceHeights, (int)piece.Y - 1) - knobSize;
+            var startPixelX = SumOfIntsToIndexArray(puzzlePieceWidths, (int)piece.X - 1) - piece.KnobSize;
+            var startPixelY = SumOfIntsToIndexArray(puzzlePieceHeights, (int)piece.Y - 1) - piece.KnobSize;
 
             for (int x = 0; x < mask.width; x++)
                 for (int y = 0; y < mask.height; y++)
@@ -165,43 +186,40 @@ namespace PuzzleMakerTwo
                     else
                         newTexture.SetPixel(x, y, Color.clear);
 
-            var texturepath = savePath + "/" + puzzleName + pieceNumber;
+            var texturepath = fullPath + piece.ID;
 
             if (Directory.Exists(Path.GetDirectoryName(texturepath)))
-            Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
+                Directory.CreateDirectory(Path.GetDirectoryName(texturepath));
             var textureSprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), new Vector2(0.5f, 0.5f),
                 ppu);
             Sprite exportedSprite = SaveSpriteAsPNG(textureSprite, texturepath);
             return exportedSprite;
         }
 
-        private void CreatePuzzleGame(int knobSize, int[] puzzlePieceWidths, int[] puzzlePieceHeights, int count, float ppu, PuzzleGame parent, float puzzleWidthWorldSpace, float puzzleHeightWorldSpace, PuzzlePieceCreationTool piece, Texture2D newTexture, Sprite savedSpriteaswell)
+        private void CreatePuzzlePiecePrefabs(float ppu, PuzzleGame parent, PuzzlePieceCreationTool piece, Sprite pieceSprite)
         {
-            var correctX = ((sumOfIntsToIndexArray(puzzlePieceWidths, ((int)piece.X - 1)) / ppu) + (piece.Width / ppu) / 2)
+
+            var sumOfPiecesWidth = SumOfIntsToIndexArray(puzzleBoardLayout.PieceWidths, piece.X - 1);
+            var correctX = ((sumOfPiecesWidth / ppu) + (piece.Width / ppu) / 2)
                                     - (puzzleWidthWorldSpace / 2);
-            var correctY = ((sumOfIntsToIndexArray(puzzlePieceHeights, ((int)piece.Y - 1)) / ppu) + (piece.Height / ppu) / 2)
+
+            var sumOfPiecesHeight = SumOfIntsToIndexArray(puzzleBoardLayout.PieceHeights, piece.Y - 1);
+            var correctY = ((sumOfPiecesHeight / ppu) + (piece.Height / ppu) / 2)
                 - (puzzleHeightWorldSpace / 2);
 
 
-            var prefab = GameObject.Instantiate(_puzzlePiecePrefab,
-            new Vector3(
-                correctX,
-                correctY,
-                0),
-            quaternion.identity,
-            parent.transform);
-            var correctPositionOriginLowerLeft = prefab.transform.localPosition;
-            prefab.name = $"PuzzlePiece {count}";
-            prefab.SetSprite(savedSpriteaswell);
-            prefab.SetCorrectPosition(correctX, correctY);
+            var prefab = GameObject.Instantiate(_puzzlePiecePrefab, new Vector3(correctX, correctY, 0), quaternion.identity, parent.transform);
+
+            prefab.name = $"PuzzlePiece {piece.ID}";
+            prefab.SetSprite(pieceSprite);
+            //prefab.SetCorrectPosition(correctX, correctY);
             prefab.SetBoardPosition(piece.X, piece.Y);
-            prefab.SetCornerStart(sumOfIntsToIndexArray(puzzlePieceWidths, piece.X - 1),
-                sumOfIntsToIndexArray(puzzlePieceHeights, piece.Y - 1));
+            prefab.SetCornerStart(sumOfPiecesWidth, sumOfPiecesHeight);
 
             var puzzleMoveGrabCollider = prefab.gameObject.AddComponent<BoxCollider2D>();
             puzzleMoveGrabCollider.isTrigger = false;
             puzzleMoveGrabCollider.size =
-                new Vector2((newTexture.width - 2 * knobSize) / ppu, (newTexture.height - 2 * knobSize) / ppu);
+                new Vector2((pieceSprite.texture.width - 2 * piece.KnobSize) / ppu, (pieceSprite.texture.height - 2 * piece.KnobSize) / ppu);
         }
 
 
@@ -327,13 +345,13 @@ namespace PuzzleMakerTwo
         }
 
         //Method for creating puzzlePieces passed to the PuzzleBoard
-        
 
-        int sumOfIntsToIndexArray(int[] array,int index)
+
+        int SumOfIntsToIndexArray(int[] array, int index)
         {
 
-            
-            
+
+
             var sum = 0;
             for (int i = 0; i <= index; i++)
             {
@@ -392,7 +410,7 @@ namespace PuzzleMakerTwo
             for (int i = 1; i < intsEvenly.Length - 1; i++)
             {
                 var currentBaseXpos = ((float)AmountToDivide / _columns) * (i + 1);
-                int temp = sumOfIntsToIndexArray(intsEvenly, i - 1) + first;
+                int temp = SumOfIntsToIndexArray(intsEvenly, i - 1) + first;
 
                 if (currentBaseXpos - temp >= 1)
                     intsEvenly[i] = first + 1;
@@ -400,22 +418,16 @@ namespace PuzzleMakerTwo
                     intsEvenly[i] = first;
             }
 
-            var currentSum = sumOfIntsToIndexArray(intsEvenly, intsEvenly.Length - 1);
+            var currentSum = SumOfIntsToIndexArray(intsEvenly, intsEvenly.Length - 1);
             intsEvenly[intsEvenly.Length - 1] = AmountToDivide - currentSum;
             return intsEvenly;
         }
 
-        /// <summary>
-        /// Exports a png and returns the sprite
-        /// </summary>
-        /// <param name="sprite">Sprite to be Exported</param>
-        /// <param name="proj_path">Path to be exported to</param>
-        /// <returns></returns>
-        Sprite SaveSpriteAsPNG(Sprite sprite, string proj_path)
+        Sprite SaveSpriteAsPNG(Sprite sprite, string relativePath)
         {
-            var pathWithLineEnding = proj_path + ".png";
+            var pathWithLineEnding = relativePath + ".png";
             var abs_path = Path.Combine(Application.dataPath, pathWithLineEnding);
-            proj_path = Path.Combine("Assets", pathWithLineEnding);
+            relativePath = Path.Combine("Assets", pathWithLineEnding);
 
             Directory.CreateDirectory(Path.GetDirectoryName(abs_path));
             File.WriteAllBytes(abs_path, ImageConversion.EncodeToPNG(sprite.texture));
@@ -423,7 +435,7 @@ namespace PuzzleMakerTwo
             AssetDatabase.Refresh();
 
 
-            var ti = AssetImporter.GetAtPath(proj_path) as TextureImporter;
+            var ti = AssetImporter.GetAtPath(relativePath) as TextureImporter;
             ti.spritePixelsPerUnit = sprite.pixelsPerUnit;
             ti.mipmapEnabled = false;
             ti.textureType = TextureImporterType.Sprite;
@@ -431,20 +443,18 @@ namespace PuzzleMakerTwo
             EditorUtility.SetDirty(ti);
             ti.SaveAndReimport();
 
-            return AssetDatabase.LoadAssetAtPath<Sprite>(proj_path);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(relativePath);
 
         }
 
-        /// <summary>
-        /// returns a copy and scaled _knobTexture2D to the height and width of the _knobs
-        /// </summary>
-        /// <returns></returns>
+
         private Texture2D MakeKnobTexture()
         {
             var newTexture = CopyTexture2D(_knobTexture2D);
 
             newTexture.Apply();
             TextureScale.Scale(newTexture, _knobSize, _knobSize);
+            newTexture.Apply();
 
 
             return newTexture;

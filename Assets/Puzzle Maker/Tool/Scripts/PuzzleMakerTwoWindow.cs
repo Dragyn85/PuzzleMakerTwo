@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using PuzzleMakerTwo.GameExample;
 
-namespace PuzzleMakerTwo
+namespace PuzzleMakerTwo.Creator
 {
     public class PuzzleMakerTwoWindow : EditorWindow
     {

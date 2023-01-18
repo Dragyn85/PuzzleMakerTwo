@@ -7,54 +7,59 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PuzzleMakerTwo
+namespace PuzzleMakerTwo.Creator
 {
     public class PuzzleBoardLayout
     {
-
         public class OnGridObjectChangedEventArgs : EventArgs
         {
             public int x;
             public int y;
         }
 
-        private int width;
-        private int height;
-        private PuzzlePieceCreationTool[,] gridArray;
-        
+        private int _width;
+        private int _height;
+        private int[] _widths;
+        private int[] _heights;
+        private PuzzlePieceCreationTool[,] _gridArray;
 
-        public PuzzleBoardLayout(int width,
-            int height,
-            int[] widths,
-            int[] heights)
+        public int[] PieceHeights => _heights;
+        public int[] PieceWidths => _widths;
+
+
+        public PuzzleBoardLayout(int width, int height, int[] widths, int[] heights, int knobSize)
         {
-            this.width = width;
-            this.height = height;
+            this._width = width;
+            this._height = height;
+            _heights = heights;
+            _widths = widths;
 
-            gridArray = new PuzzlePieceCreationTool[width, height];
-
-            for (int x = 0; x < gridArray.GetLength(0); x++)
+            _gridArray = new PuzzlePieceCreationTool[width, height];
+            int number = 0;
+            for (int x = 0; x < _gridArray.GetLength(0); x++)
             {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
+                for (int y = 0; y < _gridArray.GetLength(1); y++)
                 {
-                    gridArray[x, y] = CreatePuzzlePiece(this, x, y, widths[x], heights[y]);
+
+                    _gridArray[x, y] = CreatePuzzlePiece(this, x, y, widths[x], heights[y], number, knobSize);
+                    number++;
                 }
             }
 
-            foreach (var piece in gridArray)
+            foreach (var piece in _gridArray)
                 piece.SetKnobs();
         }
-        
-        PuzzlePieceCreationTool CreatePuzzlePiece(PuzzleBoardLayout g, int x, int y,int width, int height)
+
+        PuzzlePieceCreationTool CreatePuzzlePiece(PuzzleBoardLayout g, int x, int y, int width, int height, int id, int knobSize)
         {
-            return new PuzzlePieceCreationTool(g, x, y,height,width);
+            return new PuzzlePieceCreationTool(g, x, y, height, width, id, knobSize);
         }
 
         public PuzzlePieceCreationTool GetGridObject(int x, int y)
         {
-            if (x >= 0 && y >= 0 && x < width && y < height)
+            if (x >= 0 && y >= 0 && x < _width && y < _height)
             {
-                return gridArray[x, y];
+                return _gridArray[x, y];
             }
             else
             {
@@ -63,14 +68,14 @@ namespace PuzzleMakerTwo
         }
 
 
-        public List<PuzzlePieceCreationTool> GetAll()
+        public List<PuzzlePieceCreationTool> GetAllPieces()
         {
             var gridObjects = new List<PuzzlePieceCreationTool>();
-            for (int x = 0; x < gridArray.GetLength(0); x++)
+            for (int x = 0; x < _gridArray.GetLength(0); x++)
             {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
+                for (int y = 0; y < _gridArray.GetLength(1); y++)
                 {
-                    gridObjects.Add(gridArray[x, y]);
+                    gridObjects.Add(_gridArray[x, y]);
                 }
             }
 

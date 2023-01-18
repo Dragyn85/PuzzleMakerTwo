@@ -2,10 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIButtons : MonoBehaviour
+namespace PuzzleMakerTwo.GameExample
 {
-   public void ExitGame()
+
+    public class UIButtons : MonoBehaviour
     {
-        Application.Quit();
+        public void ExitGame()
+        {
+            Application.Quit();
+        }
     }
 }
