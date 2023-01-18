@@ -4,86 +4,88 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class PuzzleGame : MonoBehaviour
+namespace PuzzleMakerTwo.GameExample
 {
-    public event Action PuzzleCompleted;
-    public Vector3 HeldOffset { get; set; }
-
-    [SerializeField] private List<PuzzlePiece> _puzzlePieces;
-    [SerializeField] private AvailablePiecesArea _availablePiecesArea;
-    [SerializeField] private PuzzleBoard _puzzleBoard;
-    
-
-    private Camera cam;
-
-   
-
-    public void FindPieces()
+    public class PuzzleGame : MonoBehaviour
     {
-        _puzzlePieces = GetComponentsInChildren<PuzzlePiece>().ToList();
-    }
+        public event Action PuzzleCompleted;
+        public Vector3 HeldOffset { get; set; }
 
-    private void Start()
-    {
-        FindPieces();
-        _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
-        _availablePiecesArea.AvailablePiecesChanged += HandleAvailablePiecesChanged;
-    }
+        [SerializeField] private List<PuzzlePiece> _puzzlePieces;
+        [SerializeField] private AvailablePiecesArea _availablePiecesArea;
+        [SerializeField] private PuzzleBoard _puzzleBoard;
 
-    private void OnDestroy()
-    {
-        _availablePiecesArea.AvailablePiecesChanged -= HandleAvailablePiecesChanged;
-    }
+        private Camera cam;
 
-    private void HandleAvailablePiecesChanged()
-    {
-        if (_availablePiecesArea.PiecesLeft <= 0)
+        private void FindPieces()
         {
-            PuzzleCompleted?.Invoke();
-            StartCoroutine(RestartGameAfterDelay(3f));
+            _puzzlePieces = GetComponentsInChildren<PuzzlePiece>().ToList();
         }
-    }
 
-    private IEnumerator RestartGameAfterDelay(float f)
-    {
-        
-        yield return new WaitForSeconds(f);
-        ResetPuzzle();
-
-    }
-
-
-    public void DropedPiece(PuzzlePiece puzzlePiece)
-    {
-        if (_puzzleBoard.CheckPosition(puzzlePiece))
+        private void Start()
         {
-            puzzlePiece.transform.parent = _puzzleBoard.transform;
-            puzzlePiece.AprovePosition();
-            _availablePiecesArea.RemovePiece(puzzlePiece);
+            FindPieces();
+
+            if (_puzzlePieces.Count > 0)
+            {
+                var height = _puzzlePieces[0].GetComponent<BoxCollider2D>().size.y;
+                _availablePiecesArea.SetDistance(height);
+
+            }
+            _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+            _availablePiecesArea.AvailablePiecesChanged += HandleAvailablePiecesChanged;
         }
-        else
+
+        private void OnDestroy()
         {
-            puzzlePiece.ReturnToTakenPos();
+            _availablePiecesArea.AvailablePiecesChanged -= HandleAvailablePiecesChanged;
         }
-    }
 
-    [ContextMenu("Reset Puzzle")]
-    private void ResetPuzzle()
-    {
-        _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
-        foreach (var puzzlePiece in _puzzlePieces)
+        private void HandleAvailablePiecesChanged()
         {
-            puzzlePiece.Reset();
+            if (_availablePiecesArea.PiecesLeft <= 0)
+            {
+                PuzzleCompleted?.Invoke();
+                StartCoroutine(RestartGameAfterDelay(3f));
+            }
         }
-    }
 
-    public void SetBackGround(Sprite sprite)
-    {
-        _puzzleBoard.SetBackground(sprite);
-    }
+        private IEnumerator RestartGameAfterDelay(float f)
+        {
 
-    public void SetPiecesDistance(float heightOfPieces)
-    {
-        _availablePiecesArea.SetDistance(heightOfPieces);
+            yield return new WaitForSeconds(f);
+            ResetPuzzle();
+
+        }
+
+
+        public void DropedPiece(PuzzlePiece puzzlePiece)
+        {
+            if (_puzzleBoard.CheckPosition(puzzlePiece))
+            {
+                puzzlePiece.transform.parent = _puzzleBoard.transform;
+                puzzlePiece.AprovePosition();
+                _availablePiecesArea.RemovePiece(puzzlePiece);
+            }
+            else
+            {
+                puzzlePiece.ReturnToTakenPos();
+            }
+        }
+
+        [ContextMenu("Reset Puzzle")]
+        private void ResetPuzzle()
+        {
+            _availablePiecesArea.AddPiecesInRandomOrder(_puzzlePieces);
+            foreach (var puzzlePiece in _puzzlePieces)
+            {
+                puzzlePiece.Reset();
+            }
+        }
+
+        public void SetBoardBackground(Sprite puzzleImageSprite)
+        {
+            _puzzleBoard.SetBackground(puzzleImageSprite);
+        }
     }
 }
