@@ -15,7 +15,7 @@ namespace PuzzleMakerTwo.Creator
 {
     public class PuzzleMaker
     {
-        private PuzzleGame _puzzleGamePrefab;
+        private Puzzle _puzzleGamePrefab;
         private PuzzlePiece _puzzlePiecePrefab;
         private PuzzleBoardLayout puzzleBoardLayout;
         private int _columns;
@@ -101,7 +101,7 @@ namespace PuzzleMakerTwo.Creator
 
         private void CreateGame(Sprite puzzleImageSprite, string puzzleName, string pathAndNameCombined, List<PuzzlePieceCreationTool> allPuzzlePiecesUnderConstruction, float ppu, List<Sprite> sprits)
         {
-            PuzzleGame parent = GameObject.Instantiate(_puzzleGamePrefab,
+            Puzzle parent = GameObject.Instantiate(_puzzleGamePrefab,
                                     Vector3.zero,
                                     Quaternion.identity);
 
@@ -118,7 +118,7 @@ namespace PuzzleMakerTwo.Creator
                 GameObject.DestroyImmediate(parent.gameObject);
         }
 
-        private void CreatePuzzleGamePrefab(Sprite puzzleImageSprite, string relativePath, PuzzleGame parent)
+        private void CreatePuzzleGamePrefab(Sprite puzzleImageSprite, string relativePath, Puzzle parent)
         {
             var parentPrefabPath = Path.Combine(Application.dataPath,
                                 relativePath + ".prefab");
@@ -196,7 +196,7 @@ namespace PuzzleMakerTwo.Creator
             return exportedSprite;
         }
 
-        private void CreatePuzzlePiecePrefabs(float ppu, PuzzleGame parent, PuzzlePieceCreationTool piece, Sprite pieceSprite)
+        private void CreatePuzzlePiecePrefabs(float ppu, Puzzle parent, PuzzlePieceCreationTool piece, Sprite pieceSprite)
         {
 
             var sumOfPiecesWidth = SumOfIntsToIndexArray(puzzleBoardLayout.PieceWidths, piece.X - 1);
@@ -208,11 +208,11 @@ namespace PuzzleMakerTwo.Creator
                 - (puzzleHeightWorldSpace / 2);
 
 
-            var prefab = GameObject.Instantiate(_puzzlePiecePrefab, new Vector3(correctX, correctY, 0), quaternion.identity, parent.transform);
+            var prefab = GameObject.Instantiate(_puzzlePiecePrefab, new Vector3(parent.transform.position.x +correctX,parent.transform.position.y + correctY, 0), quaternion.identity, parent.transform);
 
             prefab.name = $"PuzzlePiece {piece.ID}";
             prefab.SetSprite(pieceSprite);
-            //prefab.SetCorrectPosition(correctX, correctY);
+            prefab.SetCorrectPosition(correctX, correctY);
             prefab.SetBoardPosition(piece.X, piece.Y);
             prefab.SetCornerStart(sumOfPiecesWidth, sumOfPiecesHeight);
 
@@ -367,7 +367,7 @@ namespace PuzzleMakerTwo.Creator
         /// <returns>true if dependancies are found</returns>
         private bool TryGetGamePrefabs()
         {
-            var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
+            var puzzleGames = MyEditorTools.Tools.FindAssetsWithExtension<Puzzle>(".prefab");
             _puzzleGamePrefab = puzzleGames.FirstOrDefault(t => t.name == "PuzzleMakerPuzzle - GamePrefab");
             if (_puzzleGamePrefab == null)
             {

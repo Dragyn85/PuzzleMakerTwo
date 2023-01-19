@@ -19,7 +19,7 @@ namespace PuzzleMakerTwo.Creator
         string _savePath = "MyPuzzleMaker/Output";
         private string _puzzleName = "mypuzzle";
         private PuzzlePiece _prefab;
-        private PuzzleGame _puzzleGamePrefab;
+        private Puzzle _puzzleGamePrefab;
         private PuzzleBoardLayout puzzleBoardLayout;
         private const string PREFIX = "PuzzleMakerValue";
 
@@ -84,6 +84,7 @@ namespace PuzzleMakerTwo.Creator
             }
             else if (_knob == null)
             {
+                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D), false);
                 _conditions[nameof(_knob)].SetCondition(false);
             }
             else

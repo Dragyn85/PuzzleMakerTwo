@@ -8,9 +8,10 @@ namespace PuzzleMakerTwo.GameExample
     public class PuzzlePiece : MonoBehaviour
     {
 
-        private SpriteRenderer _spriteRenderer;
-        private PuzzleGame _puzzleGame;
         [SerializeField] private puzzlePieceData _pieceData;
+
+        private SpriteRenderer _spriteRenderer;
+        private Puzzle _puzzleGame;
         private RectTransform _rectTransform;
         private Vector3 _lastPos;
 
@@ -22,7 +23,7 @@ namespace PuzzleMakerTwo.GameExample
 
         private void Start()
         {
-            _puzzleGame = GetComponentInParent<PuzzleGame>();
+            _puzzleGame = GetComponentInParent<Puzzle>();
             SetCorrectPosition(_pieceData.CorrectPos.x * transform.lossyScale.x, _pieceData.CorrectPos.y * transform.lossyScale.y);
 
         }
