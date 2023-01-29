@@ -2,36 +2,49 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PuzzleArea : MonoBehaviour
+namespace PuzzleMakerTwo.GameExample
 {
-    [SerializeField] GameObject puzzleArea;
-
-    public Vector2 GetPuzzleAreaSize()
+    public class PuzzleArea : MonoBehaviour
     {
-        var rectTransform = puzzleArea.GetComponent<RectTransform>();
-        Vector3[] fourCorners = new Vector3[4];
-        if (rectTransform != null)
+        [SerializeField] GameObject puzzleArea;
+        [SerializeField] BoxCollider2D puzzleAreaCollider;
+
+        public Vector2 GetPuzzleAreaSize2()
         {
-            rectTransform.GetWorldCorners(fourCorners);
-
-            float height = 0;
-            float width = 0;
-
-            foreach (var corner in fourCorners)
+            var rectTransform = puzzleArea.GetComponent<RectTransform>();
+            Vector3[] fourCorners = new Vector3[4];
+            if (rectTransform != null)
             {
-                if (height == 0 && width == 0)
+                rectTransform.GetWorldCorners(fourCorners);
+
+                float height = 0;
+                float width = 0;
+
+                foreach (var corner in fourCorners)
                 {
-                    height = corner.y;
-                    width = corner.x;
+                    if (height == 0 && width == 0)
+                    {
+                        height = corner.y;
+                        width = corner.x;
+                    }
+                    else if (height != corner.y && width != corner.x)
+                    {
+                        height = Mathf.Abs(height - corner.y);
+                        width = Mathf.Abs(width - corner.x);
+                    }
                 }
-                else if (height != corner.y && width != corner.x)
-                {
-                    height = Mathf.Abs(height - corner.y);
-                    width = Mathf.Abs(width - corner.x);
-                }
+                return new Vector2(width, height);
             }
-            return new Vector2(width, height);
+            return Vector2.zero;
         }
-        return Vector2.zero;
+
+        public Vector2 GetPuzzleAreaSize()
+        {
+            if (puzzleAreaCollider == null)
+            {
+                Debug.LogError("No boxcolider to define puzzle area");
+            }
+            return puzzleAreaCollider.size;
+        }
     }
 }
