@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace PuzzleMakerTwo.GameExample
 {
-
     public class UIButtons : MonoBehaviour
     {
         public void ExitGame()

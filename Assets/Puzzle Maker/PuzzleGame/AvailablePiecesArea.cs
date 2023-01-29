@@ -1,82 +1,57 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using PuzzleMakerTwo;
+using System;
+using UnityEngine.UI;
+using Unity.VisualScripting;
 
 namespace PuzzleMakerTwo.GameExample
 {
     public class AvailablePiecesArea : MonoBehaviour
     {
-        private HashSet<PuzzlePiece> _availablePieces = new HashSet<PuzzlePiece>();
-        public event Action AvailablePiecesChanged;
+        [SerializeField] Transform _scrollRectContent;
+        [SerializeField] ScrollRect _scrollRect;
+        [SerializeField] AvailablePiecePreview _piecePreviewPrefab;
 
-        private bool dragging;
-        private Vector3 lastPos;
-        float piecesdistnance;
 
-        [SerializeField] private float _moveSpeed = 0.2f;
-        [SerializeField] private float spacing;
-        [SerializeField] private Transform _pieceHolder;
-
-        private float distance => spacing + piecesdistnance;
-        public int PiecesLeft => _availablePieces.Count;
-
-        private void OnMouseDrag()
+        public void AddPieces(List<PuzzlePiece> pieces)
         {
-            if (!dragging)
+            
+            List<AvailablePiecePreview> newPreviews = new List<AvailablePiecePreview>();
+            foreach (var piece in pieces)
             {
-                lastPos = Input.mousePosition;
-                dragging = true;
+                //var newPreview = Instantiate(_piecePreviewPrefab, _scrollRectContent);
+                var newPreview = Instantiate(_piecePreviewPrefab);
+                newPreview.AddPiece(piece);
+                newPreviews.Add(newPreview);
             }
-            else
+            newPreviews.Shuffle();
+            foreach (var piecePreview in newPreviews)
             {
-                var deltaY = (lastPos.y - Input.mousePosition.y) * -1;
-                lastPos = Input.mousePosition;
-
-                _pieceHolder.position = new Vector3(_pieceHolder.position.x, (_pieceHolder.position.y + _moveSpeed * deltaY));
+                piecePreview.transform.SetParent(_scrollRectContent);
             }
         }
-
-        private void OnMouseUp()
+        private void Awake()
         {
-            dragging = false;
+            AvailablePiecePreview.OnAnyPieceSelected += HandleSelection;
+            AvailablePiecePreview.OnAnyPieceReleased += HandleDeselection;
+            _scrollRect.horizontal = false;
+        }
+        private void OnDestroy()
+        {
+            AvailablePiecePreview.OnAnyPieceSelected -= HandleSelection;
+            AvailablePiecePreview.OnAnyPieceReleased -= HandleDeselection;
         }
 
-        public void AddPiecesInRandomOrder(List<PuzzlePiece> piecesToAdd)
+        private void HandleDeselection()
         {
-            piecesToAdd.Shuffle();
-            foreach (PuzzlePiece puzzlePiece in piecesToAdd)
-            {
-                _availablePieces.Add(puzzlePiece);
-                puzzlePiece.transform.SetParent(_pieceHolder);
-            }
-            ArrangePieces();
+            _scrollRect.vertical = true;
         }
 
-        void ArrangePieces()
+        private void HandleSelection()
         {
-            var count = 0;
-            foreach (var piece in _availablePieces)
-            {
-                piece.transform.localPosition = new Vector3(
-                    0,
-                    transform.position.y - distance * count,
-                    0);
-                count++;
-            }
-        }
-
-        public void SetDistance(float heightOfPieces)
-        {
-            piecesdistnance = heightOfPieces;
-        }
-
-        public void RemovePiece(PuzzlePiece puzzlePiece)
-        {
-            _availablePieces.Remove(puzzlePiece);
-            ArrangePieces();
-            AvailablePiecesChanged?.Invoke();
+            _scrollRect.vertical = false;
         }
     }
 }

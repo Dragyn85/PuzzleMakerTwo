@@ -19,7 +19,7 @@ namespace PuzzleMakerTwo.Creator
         string _savePath = "MyPuzzleMaker/Output";
         private string _puzzleName = "mypuzzle";
         private PuzzlePiece _prefab;
-        private PuzzleGame _puzzleGamePrefab;
+        private Puzzle _puzzleGamePrefab;
         private PuzzleBoardLayout puzzleBoardLayout;
         private const string PREFIX = "PuzzleMakerValue";
 
@@ -69,7 +69,7 @@ namespace PuzzleMakerTwo.Creator
             
             _columns = EditorGUILayout.IntField("How many columns",_columns);
             _conditions[nameof(_columns)].SetCondition(_columns > 1);
-            _rows = EditorGUILayout.IntField("How many columns",_rows);
+            _rows = EditorGUILayout.IntField("How many rows",_rows);
             _conditions[nameof(_rows)].SetCondition(_rows > 1);
             EditorGUILayout.LabelField("Knobs settings");
             
@@ -84,6 +84,7 @@ namespace PuzzleMakerTwo.Creator
             }
             else if (_knob == null)
             {
+                _knob = (Texture2D)EditorGUILayout.ObjectField(_knob, typeof(Texture2D), false);
                 _conditions[nameof(_knob)].SetCondition(false);
             }
             else
@@ -108,14 +109,10 @@ namespace PuzzleMakerTwo.Creator
                 _savePath = selectedPath;
                 if (_savePath.StartsWith(Application.dataPath))
                     _savePath = _savePath.Substring(Application.dataPath.Length + 1);
-                Debug.Log($"{selectedPath}/{_puzzleName}1.png");
             }
             
             EditorGUILayout.EndHorizontal();
             _puzzleName = EditorGUILayout.TextField(_puzzleName);
-            //var prefabs = MyEditorTools.Tools.FindAssetsWithExtension<PuzzleGame>(".prefab");
-            //var prefab = prefabs.FirstOrDefault(t => t.name == _puzzleName);
-
             
             var isMissingCondition = _conditions.Values.Where(t => t.Accepted() == false).ToList();
 
@@ -126,25 +123,26 @@ namespace PuzzleMakerTwo.Creator
                 GUI.color = Color.magenta;
                 
             }
-            
+            EditorGUILayout.LabelField($"Final path: {_savePath}\\{_puzzleName}");
             if (GUILayout.Button("Creat puzzle"))
             {
-                var puzzleExists = File.Exists($"{Application.dataPath}/{_savePath}/{_puzzleName}1.png");
+                var pathWithSubFolder = $"{_savePath}/{_puzzleName}";
+                var puzzleExists = File.Exists($"{Application.dataPath}/{pathWithSubFolder}/{_puzzleName}1.png");
                 var shouldCreatPuzzle = true;
+                
                 if (puzzleExists)
                 {
                     shouldCreatPuzzle = EditorUtility.DisplayDialog("Puzzle Exists",
                         "A puzzle with that name already exists, would you like to delete the exisiting one?",
                         "Yes",
-                        "Cansel");
+                        "Cancel");
                     if (shouldCreatPuzzle)
-                        DeleteDirectory();
+                        DeleteDirectory(pathWithSubFolder);
                 }
                 if(shouldCreatPuzzle)
                 {
-
                     var puzzleMakerTwo = new PuzzleMaker();
-                    puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, _savePath, _puzzleName, _createGame);
+                    puzzleMakerTwo.CreatPuzzle(_tempSprite, _columns, _rows, _knob, _knobSize, $"{_savePath}/{_puzzleName}", _puzzleName, _createGame);
                 }
             }
 
@@ -163,17 +161,6 @@ namespace PuzzleMakerTwo.Creator
             }
             if(_preview != null)
                 EditorGUI.DrawPreviewTexture(new Rect(200f,100f,_preview.width, _preview.height),_preview);
-        }
-
-       
-
-        private string GetPrefabPath(string dataPath, string prefabPath)
-        {
-            
-            var combinedPath = $"{dataPath}/{prefabPath}.prefab";
-            
-            return combinedPath;
-
         }
 
         private void OnEnable() 
@@ -216,9 +203,9 @@ namespace PuzzleMakerTwo.Creator
         }
 
 
-        void DeleteDirectory()
+        void DeleteDirectory(string targetfolder)
         {
-            var Path = $"{Application.dataPath}/{_savePath}";
+            var Path = $"{Application.dataPath}/{targetfolder}";
             if (Directory.Exists(Path))
                 Directory.Delete(Path,true);
         }

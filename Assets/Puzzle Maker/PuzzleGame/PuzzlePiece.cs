@@ -7,63 +7,22 @@ namespace PuzzleMakerTwo.GameExample
     [RequireComponent(typeof(SpriteRenderer))]
     public class PuzzlePiece : MonoBehaviour
     {
+        public static event Action AnyPiecePlacedCorrectly;
+
+        [SerializeField] private puzzlePieceData _pieceData;
+        [SerializeField] private float _hideAlpha = 0.1f;
 
         private SpriteRenderer _spriteRenderer;
-        private PuzzleGame _puzzleGame;
-        [SerializeField] private puzzlePieceData _pieceData;
-        private RectTransform _rectTransform;
-        private Vector3 _lastPos;
-
-
         private bool _isPlacedCorrectly;
 
+        public Vector2 CorrectPos => _pieceData.CorrectPos *transform.lossyScale.x;
 
-        public Vector2 CorrectPos => _pieceData.CorrectPos;
-
-        private void Start()
-        {
-            _puzzleGame = GetComponentInParent<PuzzleGame>();
-            SetCorrectPosition(_pieceData.CorrectPos.x * transform.lossyScale.x, _pieceData.CorrectPos.y * transform.lossyScale.y);
-
-        }
+        public bool IsPlacedCorrectly => _isPlacedCorrectly;
 
         public void SetSprite(Sprite newSprite)
         {
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _spriteRenderer.sprite = newSprite;
-
-        }
-
-        private void OnMouseDown()
-        {
-            _lastPos = transform.position;
-            _puzzleGame.HeldOffset = GetMouseWorldPos() - transform.position;
-        }
-
-
-        Vector3 GetMouseWorldPos()
-        {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            var worldpos = new Vector3(mousePos.x, mousePos.y, transform.position.z);
-            return worldpos;
-        }
-
-        private void OnMouseDrag()
-        {
-            if (!_isPlacedCorrectly)
-            {
-                transform.position = GetMouseWorldPos();
-            }
-        }
-
-        private void OnMouseUp()
-        {
-            if (_puzzleGame)
-                _puzzleGame.DropedPiece(this);
-        }
-        public void Reset()
-        {
-            _isPlacedCorrectly = false;
         }
 
         public void SetBoardPosition(int pieceX, int pieceY)
@@ -82,19 +41,46 @@ namespace PuzzleMakerTwo.GameExample
             _pieceData.puzzlePixelStartCorner = new Vector2(startPixelX, startPixelY);
         }
 
-        public void ReturnToTakenPos()
-        {
-            transform.position = _lastPos;
-        }
-
         public void SetCorrectPosition(float correctX, float correctY)
         {
             _pieceData.CorrectPos = new Vector2(correctX, correctY);
         }
 
-        public void AprovePosition()
+        internal Sprite GetSprite()
         {
-            _isPlacedCorrectly = true;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            if (_spriteRenderer != null)
+                return _spriteRenderer.sprite;
+            else return null;
+        }
+
+        internal void Hide()
+        {
+            Color color =_spriteRenderer.color;
+            color.a = _hideAlpha;
+            _spriteRenderer.color = color;
+        }
+        public void Show()
+        {
+            Color color = _spriteRenderer.color;
+            float colorAlpha = 1;
+            color.a = colorAlpha;
+            _spriteRenderer.color = color;
+        }
+
+        internal void CheckPosition(Vector2 pos, Action<bool> value)
+        {
+            if(Vector3.Distance(pos,transform.position)< 1)
+            {
+                value(true);
+                Show();
+                _isPlacedCorrectly=true;
+                AnyPiecePlacedCorrectly?.Invoke();
+            }
+            else
+            {
+                value(false);
+            }
         }
     }
 
@@ -113,5 +99,15 @@ namespace PuzzleMakerTwo.GameExample
         }
 
         public Vector2 CorrectPos;
+    }
+
+    public class PuzzleInputs
+    {
+        public static Vector2 GetMouseWorldPos()
+        {
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var worldpos = new Vector2(mousePos.x, mousePos.y);
+            return worldpos;
+        }
     }
 }
