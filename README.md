@@ -1,10 +1,21 @@
 ![alttext](https://img.shields.io/badge/Unity%20version-2021.3.16f1-lightgrey&?style=for-the-badge&logo=unity&color=lightgray)  ![alttext](https://img.shields.io/badge/License-MIT-lightgrey&?style=for-the-badge&color=lime)  ![alttext](https://img.shields.io/badge/O.S-Windiws%2010-lightgrey&?style=for-the-badge&color=purple)
 # Puzzle Maker Two
 A tool that creates jigg saw puzzle pieces from a picture, it splits up the big picture into smaller pngs and also creates a puzzle prefab.
-![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/Puzzle%20game_small.PNG?raw=true, "A puzzle")![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/puzzle%20select_small.PNG?raw=true, "The puzzle selection list")
 
+<table>
+  <tr>
+    <td>Puzzle played</td>
+     <td>Puzzle select menu</td>
+       </tr>
+  <tr>
+    <td><img src="ScreenShots/Puzzle%20game.PNG" ></td>
+    &nbsp; &nbsp;
+    <td><img src="ScreenShots/puzzle%20select.PNG" ></td>
+  </tr>
+ </table>
+ 
 How to use:
-1. Download project
+1. Download project 
 2. Open in Unity or Copy "Puzzle Maker" folder into existing project.
 3. Open Puzzle maker two window from the menu 
 4. Select picture, needs read/write access
