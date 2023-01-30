@@ -1,7 +1,7 @@
 ![alttext](https://img.shields.io/badge/Unity%20version-2021.3.16f1-lightgrey&?style=for-the-badge&logo=unity&color=lightgray)  ![alttext](https://img.shields.io/badge/License-MIT-lightgrey&?style=for-the-badge&color=lime)  ![alttext](https://img.shields.io/badge/O.S-Windiws%2010-lightgrey&?style=for-the-badge&color=purple)
 # Puzzle Maker Two
 A tool that creates jigg saw puzzle pieces from a picture, it splits up the big picture into smaller pngs and also creates a puzzle prefab.
-![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/Puzzle%20game.PNG?raw=true, "A puzzle")![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/puzzle%20select.PNG?raw=true, "The puzzle selection list")
+![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/Puzzle%20game_small.PNG?raw=true, "A puzzle")![alt text](https://github.com/Dragyn85/PuzzleMakerTwo/blob/main/ScreenShots/puzzle%20select_small.PNG?raw=true, "The puzzle selection list")
 
 How to use:
 1. Download project
