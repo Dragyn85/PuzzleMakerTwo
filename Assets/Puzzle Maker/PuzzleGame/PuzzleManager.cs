@@ -25,6 +25,10 @@ namespace PuzzleMakerTwo.GameExample
                 var newbutton = Instantiate(_buttonPrefab, _puzzlesPreviewParent);
                 newbutton.SetPuzzle(puzzle);
             }
+            foreach (var canvasGroup in _gameCanvasGroups)
+            {
+                SetCanvasGroupShow(canvasGroup, false);
+            }
         }
 
         private void HandlePuzzleStart(Puzzle puzzle)
@@ -54,8 +58,6 @@ namespace PuzzleMakerTwo.GameExample
             {
                 SetCanvasGroupShow(canvasGroup, false);
             }
-
-
         }
 
         private void SetCanvasGroupShow(CanvasGroup canvasGroup, bool show)
